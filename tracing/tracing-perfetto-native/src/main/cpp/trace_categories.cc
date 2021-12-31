@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,7 @@
  * limitations under the License.
  */
 
-package androidx.tracing.perfetto.test;
+#include "trace_categories.h"
 
-import static com.google.common.truth.Truth.assertThat;
-
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SmallTest;
-import androidx.tracing.perfetto.Tracing;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@SmallTest
-@RunWith(AndroidJUnit4.class)
-public class TracingTest {
-
-    @Test
-    public void test_isEnabled() {
-        Tracing tracing = new Tracing();
-        assertThat(tracing.isEnabled()).isEqualTo(false);
-    }
-}
+// Reserves internal static storage for our tracing categories.
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
