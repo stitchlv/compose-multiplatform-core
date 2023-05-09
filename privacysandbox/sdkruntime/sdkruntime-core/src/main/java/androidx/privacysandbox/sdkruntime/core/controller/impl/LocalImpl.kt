@@ -14,34 +14,44 @@
  * limitations under the License.
  */
 
-package androidx.privacysandbox.sdkruntime.client.controller
+package androidx.privacysandbox.sdkruntime.core.controller.impl
 
 import android.os.IBinder
-import androidx.privacysandbox.sdkruntime.client.activity.LocalSdkActivityHandlerRegistry
 import androidx.privacysandbox.sdkruntime.core.SandboxedSdkCompat
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 
 /**
- * Local implementation that will be injected to locally loaded SDKs.
+ * Wrapper for client provided implementation of [SdkSandboxControllerCompat].
+ * Checks client version to determine if method supported.
  */
-internal class LocalController(
-    private val locallyLoadedSdks: LocallyLoadedSdks
+internal class LocalImpl(
+    private val implFromClient: SdkSandboxControllerCompat.SandboxControllerImpl,
+    private val clientVersion: Int
 ) : SdkSandboxControllerCompat.SandboxControllerImpl {
-
     override fun getSandboxedSdks(): List<SandboxedSdkCompat> {
-        return locallyLoadedSdks.getLoadedSdks()
+        return implFromClient.getSandboxedSdks()
     }
 
     override fun registerSdkSandboxActivityHandler(
         handlerCompat: SdkSandboxActivityHandlerCompat
     ): IBinder {
-        return LocalSdkActivityHandlerRegistry.register(handlerCompat)
+        if (clientVersion < 3) {
+            throw UnsupportedOperationException(
+                "Client library version doesn't support SdkActivities"
+            )
+        }
+        return implFromClient.registerSdkSandboxActivityHandler(handlerCompat)
     }
 
     override fun unregisterSdkSandboxActivityHandler(
         handlerCompat: SdkSandboxActivityHandlerCompat
     ) {
-        LocalSdkActivityHandlerRegistry.unregister(handlerCompat)
+        if (clientVersion < 3) {
+            throw UnsupportedOperationException(
+                "Client library version doesn't support SdkActivities"
+            )
+        }
+        implFromClient.unregisterSdkSandboxActivityHandler(handlerCompat)
     }
 }
