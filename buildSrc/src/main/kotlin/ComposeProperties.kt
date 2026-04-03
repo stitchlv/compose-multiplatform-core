@@ -11,7 +11,7 @@ class ComposeProperties(private val myProject: Project) {
 
     val targetPlatforms: Set<ComposePlatforms>
         get() {
-            val requestedPlatforms = myProject.findProperty("compose.platforms")?.toString() ?: "jvm, android"
+            val requestedPlatforms = myProject.findProperty("compose.platforms")?.toString() ?: "jvm, android, ohos"
             return ComposePlatforms.parse(requestedPlatforms)
         }
 }

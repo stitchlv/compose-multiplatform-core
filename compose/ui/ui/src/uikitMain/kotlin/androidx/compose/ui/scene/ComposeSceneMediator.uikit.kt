@@ -68,6 +68,8 @@ import androidx.compose.ui.unit.toDpRect
 import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.window.ComposeSceneKeyboardOffsetManager
 import androidx.compose.ui.window.ApplicationForegroundStateListener
+import androidx.compose.ui.window.FirstFrameCallbackWrapper
+import androidx.compose.ui.window.FirstFrameHandler
 import androidx.compose.ui.window.FocusStack
 import androidx.compose.ui.window.InteractionUIView
 import androidx.compose.ui.window.KeyboardEventHandler
@@ -168,10 +170,14 @@ private class SemanticsOwnerListenerImpl(
 private class RenderingUIViewDelegateImpl(
     private val scene: ComposeScene,
     private val sceneOffset: () -> Offset,
+    private val firstFrameWrapper: FirstFrameCallbackWrapper
 ) : SkikoRenderDelegate {
     override fun onRender(canvas: Canvas, width: Int, height: Int, nanoTime: Long) {
         canvas.withSceneOffset {
             scene.render(asComposeCanvas(), nanoTime)
+        }
+        if (!firstFrameWrapper.receivedFirstFrame) {
+            firstFrameWrapper.invoke()
         }
     }
 
@@ -214,6 +220,7 @@ internal class ComposeSceneMediator(
         coroutineContext: CoroutineContext
     ) -> ComposeScene
 ) {
+    private val firstFrameWrapper = FirstFrameCallbackWrapper()
     private val keyboardOverlapHeightState: MutableState<Dp> = mutableStateOf(0.dp)
     private var _layout: SceneLayout = SceneLayout.Undefined
     private var constraints: List<NSLayoutConstraint> = emptyList()
@@ -397,7 +404,8 @@ internal class ComposeSceneMediator(
     private val renderDelegate by lazy {
         RenderingUIViewDelegateImpl(
             scene = scene,
-            sceneOffset = { -renderingViewBoundsInPx.topLeft.toOffset() }
+            sceneOffset = { -renderingViewBoundsInPx.topLeft.toOffset() },
+            firstFrameWrapper = firstFrameWrapper
         )
     }
 
@@ -494,6 +502,7 @@ internal class ComposeSceneMediator(
             LocalKeyboardOverlapHeight provides keyboardOverlapHeightState.value,
             LocalSafeArea provides safeAreaState.value,
             LocalLayoutMargins provides layoutMarginsState.value,
+            FirstFrameHandler provides firstFrameWrapper,
             content = content
         )
 

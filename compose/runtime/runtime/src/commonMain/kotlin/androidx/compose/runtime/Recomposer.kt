@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +21,7 @@ package androidx.compose.runtime
 import androidx.compose.runtime.collection.IdentityArraySet
 import androidx.compose.runtime.collection.fastForEach
 import androidx.compose.runtime.external.kotlinx.collections.immutable.persistentSetOf
+import androidx.compose.runtime.handleComposeStateChange
 import androidx.compose.runtime.snapshots.MutableSnapshot
 import androidx.compose.runtime.snapshots.ReaderKind
 import androidx.compose.runtime.snapshots.Snapshot
@@ -34,7 +37,11 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.coroutines.resume
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +49,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -117,6 +125,8 @@ internal interface RecomposerErrorInfo {
      */
     val recoverable: Boolean
 }
+
+internal val RECOMPOSER_EXCEPTION = CancellationException("Recomposer effect job completed")
 
 /**
  * The scheduler for performing recomposition and applying updates to one or more [Composition]s.
@@ -227,6 +237,18 @@ class Recomposer(
     // End properties guarded by stateLock
 
     private val _state = MutableStateFlow(State.Inactive)
+    val detector = AdaptiveIdleDetector(scope = CoroutineScope(effectCoroutineContext), stateFlow = _state, onAppStateChange = { state ->
+        when (state) {
+            StabilizedState.BUSY -> handleComposeStateChange(1)
+            StabilizedState.IDLE -> handleComposeStateChange(0)
+            StabilizedState.IDLE_STABLE -> handleComposeStateChange(2)
+            else -> {}
+        }
+    })
+
+    init {
+        detector.start()
+    }
 
     /**
      * A [Job] used as a parent of any effects created by this [Recomposer]'s compositions.
@@ -240,10 +262,11 @@ class Recomposer(
         invokeOnCompletion { throwable ->
             // Since the running recompose job is operating in a disjoint job if present,
             // kick it out and make sure no new ones start if we have one.
-            val cancellation = CancellationException("Recomposer effect job completed", throwable)
+            val cancellation = RECOMPOSER_EXCEPTION
 
             var continuationToResume: CancellableContinuation<Unit>? = null
             synchronized(stateLock) {
+                detector.stop()
                 val runnerJob = runnerJob
                 if (runnerJob != null) {
                     _state.value = State.ShuttingDown
@@ -290,6 +313,7 @@ class Recomposer(
 
     private val hasBroadcastFrameClockAwaiters: Boolean get() =
         synchronized(stateLock) { hasBroadcastFrameClockAwaitersLocked }
+
     /**
      * Determine the new value of [_state]. Call only while locked on [stateLock].
      * If it returns a continuation, that continuation should be resumed after releasing the lock.
@@ -1037,7 +1061,7 @@ class Recomposer(
                 _state.value = State.ShuttingDown
             }
         }
-        effectJob.cancel()
+        effectJob.cancel(RECOMPOSER_EXCEPTION)
     }
 
     /**
@@ -1561,3 +1585,94 @@ internal fun <K, V> MutableMap<K, MutableList<V>>.removeLastMultiValue(key: K): 
                 remove(key)
         }
     }
+
+enum class StabilizedState { IDLE, BUSY, IDLE_STABLE }
+/**
+ * A more sophisticated idle detector that adaptively learns the appropriate debounce time
+ * for IDLE_STABLE events based on observed state transitions.
+ */
+class AdaptiveIdleDetector(
+    private val scope: CoroutineScope,
+    private val stateFlow: StateFlow<Recomposer.State>,
+    private val onAppStateChange: (StabilizedState) -> Unit,
+    private val minimumIdleTime: Duration = 300.milliseconds, // 120 fps
+    private val maximumIdleTime: Duration = 300.milliseconds, // 10 fps
+    private val adaptationFactor: Float = 1.5f
+) {
+    private var idleDebounceTime: Duration = maximumIdleTime
+    private var lastTransitionTime: TimeSource.Monotonic.ValueTimeMark? = null
+    private var job: Job? = null
+    private var stableIdleJob: Job? = null
+    private var currentState: StabilizedState = StabilizedState.BUSY
+    fun start() : Job? {
+        job = scope.launch {
+            // Track all transition patterns between BUSY and IDLE
+            var lastState: Recomposer.State? = null
+            var idleToIdleTransitions = mutableListOf<Duration>()
+            val timeSource = TimeSource.Monotonic
+            var lastTimeMark: TimeSource.Monotonic.ValueTimeMark = timeSource.markNow()
+            stateFlow.collect { newState ->
+                val currentTimeMark = timeSource.markNow()
+                val timeSinceLastState = currentTimeMark - lastTimeMark
+                lastTimeMark = currentTimeMark
+                if (lastState != null && lastState != newState) {
+                    // State transition occurred
+                    if (lastState == Recomposer.State.Idle && newState != Recomposer.State.Idle) {
+                        // We had an IDLE → BUSY transition, record the IDLE duration
+                        // to learn about spurious IDLE periods
+                        idleToIdleTransitions.add(timeSinceLastState)
+                        // Adapt our debounce time if we have enough data
+                        if (idleToIdleTransitions.size >= 5) {
+                            updateIdleDebounceTime(idleToIdleTransitions)
+                            idleToIdleTransitions.clear()
+                        }
+                        // Cancel any pending IDLE_STABLE notification
+                        stableIdleJob?.cancel()
+                        stableIdleJob = null
+                        // Report immediate BUSY state
+                        updateAppState(StabilizedState.BUSY)
+                    }
+                    if (lastState != Recomposer.State.Idle && newState == Recomposer.State.Idle) {
+                        // We had a BUSY → IDLE transition
+                        // Report immediate IDLE state
+                        updateAppState(StabilizedState.IDLE)
+                        // Schedule a potential IDLE_STABLE notification
+                        scheduleIdleStableNotification()
+                    }
+                    lastTransitionTime = currentTimeMark
+                }
+                lastState = newState
+            }
+        }
+        return job
+    }
+    private fun scheduleIdleStableNotification() {
+        stableIdleJob?.cancel()
+        stableIdleJob = scope.launch {
+            delay(idleDebounceTime)
+            updateAppState(StabilizedState.IDLE_STABLE)
+        }
+    }
+    private fun updateIdleDebounceTime(transitions: List<Duration>) {
+        // Calculate the maximum time between rapid IDLE→BUSY transitions
+        // and add an adaptation factor to be conservative
+        val maxTransitionTime = transitions.maxOrNull() ?: return
+        // Apply adaptation factor and clamp to reasonable bounds
+        idleDebounceTime = (maxTransitionTime.inWholeMilliseconds * adaptationFactor)
+            .toLong()
+            .milliseconds
+            .coerceIn(minimumIdleTime, maximumIdleTime)
+    }
+    private fun updateAppState(newState: StabilizedState) {
+        if (currentState != newState) {
+            currentState = newState
+            onAppStateChange(newState)
+        }
+    }
+    fun stop() {
+        job?.cancel()
+        stableIdleJob?.cancel()
+        job = null
+        stableIdleJob = null
+    }
+}

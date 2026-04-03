@@ -94,7 +94,7 @@ class FontRasterizationSettings(
                     autoHintingForced = false,
                 )
 
-                Platform.Android -> FontRasterizationSettings(
+                Platform.Android, Platform.OHOS -> FontRasterizationSettings(
                     subpixelPositioning = true,
                     smoothing = FontSmoothing.AntiAlias,
                     hinting = FontHinting.Slight,

@@ -36,10 +36,13 @@ import androidx.compose.ui.util.fastAll
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+
+private val CANCEL_GESTURE_EXCEPTION = CancellationException("detectDragGestures cancel")
 
 /**
  * Gesture detector with [matcher] that waits for pointer down matching [matcher] and
@@ -114,7 +117,7 @@ suspend fun PointerInputScope.detectDragGestures(
                         while (dragJob.isActive) {
                             val event = awaitPointerEvent()
                             if (event.isReleased() && filter(currentEvent)) {
-                                dragJob.cancel()
+                                dragJob.cancel(CANCEL_GESTURE_EXCEPTION)
                             }
                         }
                     }

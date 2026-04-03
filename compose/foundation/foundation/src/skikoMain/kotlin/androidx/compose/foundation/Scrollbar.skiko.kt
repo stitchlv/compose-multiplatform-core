@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import kotlin.jvm.JvmName
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -887,6 +888,9 @@ private class TrackPressScroller(
     private val sliderAdapter: SliderAdapter,
     private val reverseLayout: Boolean,
 ) {
+    companion object {
+        private val SCROLL_CANCEL_EXCEPTION = CancellationException("TrackPressScroller cancel")
+    }
 
     /**
      * The current direction of scroll (1: down/right, -1: up/left, 0: not scrolling)
@@ -933,7 +937,7 @@ private class TrackPressScroller(
      * Starts the job that scrolls continuously towards the current offset.
      */
     private fun startScrolling() {
-        job?.cancel()
+        job?.cancel(SCROLL_CANCEL_EXCEPTION)
         job = coroutineScope.launch {
             scrollTowardsCurrentOffset()
             delay(DelayBeforeSecondScrollOnTrackPress)
@@ -966,7 +970,7 @@ private class TrackPressScroller(
      * Cleans up when the gesture finishes.
      */
     private fun cleanupAfterGesture(){
-        job?.cancel()
+        job?.cancel(SCROLL_CANCEL_EXCEPTION)
         direction = 0
         offset = null
     }

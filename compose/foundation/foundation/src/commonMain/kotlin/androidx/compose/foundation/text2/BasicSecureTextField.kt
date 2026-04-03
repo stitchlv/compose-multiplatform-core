@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -497,14 +499,16 @@ private fun DisableCutCopy(
                 onCopyRequested: (() -> Unit)?,
                 onPasteRequested: (() -> Unit)?,
                 onCutRequested: (() -> Unit)?,
-                onSelectAllRequested: (() -> Unit)?
+                onSelectAllRequested: (() -> Unit)?,
+                onPasteResult: ((String) -> Unit)?
             ) {
                 currentToolbar.showMenu(
                     rect = rect,
                     onPasteRequested = onPasteRequested,
                     onSelectAllRequested = onSelectAllRequested,
                     onCopyRequested = null,
-                    onCutRequested = null
+                    onCutRequested = null,
+                    onPasteResult = onPasteResult
                 )
             }
         }

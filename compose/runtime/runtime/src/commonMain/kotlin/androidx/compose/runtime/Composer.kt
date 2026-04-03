@@ -1,6 +1,8 @@
 /*
  * Copyright 2019 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1486,6 +1488,7 @@ internal class ComposerImpl(
         finalizeCompose()
         reader.close()
         forciblyRecompose = false
+        providersInvalid = providersInvalidStack.pop().asBool()
     }
 
     /**
@@ -2850,6 +2853,11 @@ internal class ComposerImpl(
         } else {
             recomposeToGroupEnd()
         }
+        if (sourceInformationEnabled) {
+            recomposeScopeIdentity?.hashCode()?.let { anchor ->
+                RecompositionHandler.calculateSkipCount(anchor)
+            }
+        }
     }
 
     @ComposeCompilerApi
@@ -2880,6 +2888,11 @@ internal class ComposerImpl(
     override fun startRestartGroup(key: Int): Composer {
         start(key, null, GroupKind.Group, null)
         addRecomposeScope()
+        if (sourceInformationEnabled) {
+            recomposeScopeIdentity?.hashCode()?.let { anchor ->
+                RecompositionHandler.calculateReCompositionCount(key, anchor)
+            }
+        }
         return this
     }
 

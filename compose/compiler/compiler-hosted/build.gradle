@@ -34,6 +34,7 @@ dependencies {
 tasks.withType(KotlinCompile).configureEach {
     kotlinOptions {
         jvmTarget = "1.8"
+        allWarningsAsErrors = false
         freeCompilerArgs = [
                 "-Xskip-metadata-version-check"
         ]

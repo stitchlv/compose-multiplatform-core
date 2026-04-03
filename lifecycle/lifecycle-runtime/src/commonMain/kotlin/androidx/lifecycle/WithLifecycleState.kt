@@ -29,7 +29,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * A [CancellationException] that indicates that the [Lifecycle] associated with an operation
  * reached the [Lifecycle.State.DESTROYED] state before the operation could complete.
  */
-public class LifecycleDestroyedException : CancellationException(null as String?)
+public object LifecycleDestroyedException : CancellationException(null as String?)
 
 /**
  * Run [block] with this [Lifecycle] in a [Lifecycle.State] of at least [state] and
@@ -155,7 +155,7 @@ internal suspend inline fun <R> Lifecycle.withStateAtLeastUnchecked(
     val lifecycleDispatcher = Dispatchers.Main.immediate
     val dispatchNeeded = lifecycleDispatcher.isDispatchNeeded(coroutineContext)
     if (!dispatchNeeded) {
-        if (currentState == Lifecycle.State.DESTROYED) throw LifecycleDestroyedException()
+        if (currentState == Lifecycle.State.DESTROYED) throw LifecycleDestroyedException
         if (currentState >= state) return block()
     }
 
@@ -183,7 +183,7 @@ internal suspend fun <R> Lifecycle.suspendWithStateAtLeastUnchecked(
                 co.resumeWith(runCatching(block))
             } else if (event == Lifecycle.Event.ON_DESTROY) {
                 removeObserver(this)
-                co.resumeWithException(LifecycleDestroyedException())
+                co.resumeWithException(LifecycleDestroyedException)
             }
         }
     }

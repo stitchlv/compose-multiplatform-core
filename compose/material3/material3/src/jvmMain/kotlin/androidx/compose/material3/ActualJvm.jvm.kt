@@ -35,4 +35,4 @@ actual typealias CalendarLocale = java.util.Locale
  */
 @Composable
 @ReadOnlyComposable
-internal actual fun defaultLocale(): CalendarLocale = java.util.Locale.getDefault()
+actual fun defaultLocale(): CalendarLocale = java.util.Locale.getDefault()

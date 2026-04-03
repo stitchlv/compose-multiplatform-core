@@ -1,6 +1,8 @@
 /*
  * Copyright 2019 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -138,7 +140,7 @@ inline fun <T> key(
  * @param content the composable children that are recyclable.
  */
 @Composable
-inline fun ReusableContent(
+inline fun  ReusableContent(
     key: Any?,
     content: @Composable () -> Unit
 ) {
@@ -251,7 +253,7 @@ val currentCompositeKeyHash: Int
     if (currentComposer.applier !is E) invalidApplier()
     currentComposer.startNode()
     if (currentComposer.inserting) {
-        currentComposer.createNode { factory() }
+        currentComposer.createNode(factory)
     } else {
         currentComposer.useNode()
     }
@@ -286,7 +288,7 @@ val currentCompositeKeyHash: Int
     if (currentComposer.applier !is E) invalidApplier()
     currentComposer.startReusableNode()
     if (currentComposer.inserting) {
-        currentComposer.createNode { factory() }
+        currentComposer.createNode(factory)
     } else {
         currentComposer.useNode()
     }
@@ -481,3 +483,6 @@ internal fun invalidApplier(): Unit = error("Invalid applier")
 @Composable fun rememberCompositionContext(): CompositionContext {
     return currentComposer.buildContext()
 }
+
+
+

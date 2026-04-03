@@ -61,6 +61,7 @@ import org.xml.sax.InputSource
 import org.xml.sax.XMLReader
 import androidx.build.jetbrains.ArtifactRedirecting
 import androidx.build.jetbrains.artifactRedirecting
+import java.net.URI
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 
 fun Project.configureMavenArtifactUpload(
@@ -156,10 +157,23 @@ private fun Project.configureComponentPublishing(
         androidxAndroidProjects
     }
 
+    val buildProperties = rootProject.extensions.findByName("build_properties") as Map<String, Any?>
     configure<PublishingExtension> {
         repositories {
             it.maven { repo ->
                 repo.setUrl(getRepositoryDirectory())
+            }
+            it.maven { repo ->
+                repo.name = "CustomMaven" //  optional target repository name
+                repo.url = URI.create(buildProperties["custom_maven_publish_url"]?.toString() ?: "")
+                repo.credentials {cred ->
+                    cred.username = buildProperties["custom_maven_publish_username"]?.toString() ?: ""
+                    cred.password = buildProperties["custom_maven_publish_password"]?.toString() ?: ""
+                }
+            }
+            it.maven { repo ->
+                repo.name = "BuildRepo"
+                repo.url = uri("${rootProject.rootDir}/out/repo")
             }
         }
         publications {

@@ -1,3 +1,17 @@
+<p align="center">
+    <img alt="ByteKMP" src="bytekmp/image/bytekmp.png" />
+</p>
+
+### English
+ByteKMP is a cross-platform development framework built on Kotlin Multiplatform (KMP) and Compose Multiplatform (CMP). It aims to enable efficient reuse of core code across Android, iOS, and HarmonyOS, while preserving native capabilities and native user experience on each platform, thereby improving development efficiency and reducing maintenance costs.
+
+Learn more about [ByteKMP](README_bytekmp_en.md)
+
+### 中文
+ByteKMP 是基于 Kotlin Multiplatform(KMP) 与 Compose Multiplatform(CMP) 构建的跨平台开发框架，旨在保持各平台原生能力与用户体验的前提下，实现 Android、iOS、鸿蒙 等多端核心代码的高效复用，提升开发效率并降低维护成本。
+
+详情请见 [ByteKMP](README_bytekmp_zh.md)
+
 # Android Jetpack
 
 [![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.androidx.dev)

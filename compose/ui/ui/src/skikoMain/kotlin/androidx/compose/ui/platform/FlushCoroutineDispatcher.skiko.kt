@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.concurrent.Volatile
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -38,6 +39,9 @@ import kotlinx.coroutines.InternalCoroutinesApi
 internal class FlushCoroutineDispatcher(
     scope: CoroutineScope
 ) : CoroutineDispatcher(), Delay {
+    companion object {
+        private val CANCEL_EXCEPTION = CancellationException("FlushCoroutineDispatcher cancel")
+    }
     // Dispatcher should always be alive, even if Job is cancelled. Otherwise coroutines which
     // use this dispatcher won't be properly cancelled.
     // TODO replace it by scope.coroutineContext[CoroutineDispatcher] when it will be no longer experimental
@@ -109,21 +113,21 @@ internal class FlushCoroutineDispatcher(
             delayedTasks.add(block)
         }
         val job = scope.launch {
-            try{
-                kotlinx.coroutines.delay(timeMillis)
-            } finally {
-                performRun {
-                    val isTaskAlive = synchronized(tasksLock) {
-                        delayedTasks.remove(block)
-                    }
-                    if (isTaskAlive) {
-                        block.run()
-                    }
+            kotlinx.coroutines.delay(timeMillis)
+            performRun {
+                val isTaskAlive = synchronized(tasksLock) {
+                    delayedTasks.remove(block)
+                }
+                if (isTaskAlive) {
+                    block.run()
                 }
             }
         }
         continuation.invokeOnCancellation {
-            job.cancel()
+            job.cancel(CANCEL_EXCEPTION)
+            synchronized(tasksLock) {
+                delayedTasks.remove(block)
+            }
         }
     }
 }

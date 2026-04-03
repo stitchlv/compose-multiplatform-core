@@ -29,8 +29,6 @@ import com.intellij.mock.MockProject
 import com.intellij.openapi.project.Project
 import androidx.compose.compiler.plugins.kotlin.lower.hiddenfromobjc.AddHiddenFromObjCSerializationPlugin
 import androidx.compose.compiler.plugins.kotlin.lower.hiddenfromobjc.HideFromObjCDeclarationsSet
-import com.intellij.mock.MockProject
-import com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
@@ -284,7 +282,7 @@ class ComposePluginRegistrar : org.jetbrains.kotlin.compiler.plugin.ComponentReg
             registerCommonExtensions(project, hideFromObjCDeclarationsSet)
             IrGenerationExtension.registerExtension(
                 project,
-                createComposeIrExtension(configuration, hideFromObjCDeclarationsSet)
+                createComposeIrExtension(configuration, hideFromObjCDeclarationsSet = hideFromObjCDeclarationsSet)
             )
         }
     }
@@ -292,7 +290,7 @@ class ComposePluginRegistrar : org.jetbrains.kotlin.compiler.plugin.ComponentReg
     companion object {
         fun checkCompilerVersion(configuration: CompilerConfiguration): Boolean {
             try {
-                val KOTLIN_VERSION_EXPECTATION = "1.9.20"
+                val KOTLIN_VERSION_EXPECTATION = "2.0.20-bytekmp-1001"
                 KotlinCompilerVersion.getVersion()?.let { version ->
                     val msgCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
                     val suppressKotlinVersionCheck = configuration.get(
@@ -329,6 +327,7 @@ class ComposePluginRegistrar : org.jetbrains.kotlin.compiler.plugin.ComponentReg
                                 " no effect and should be removed."
                         )
                     }
+
                     if (suppressKotlinVersionCheck != "true" &&
                         version != KOTLIN_VERSION_EXPECTATION &&
                         version != suppressKotlinVersionCheck
@@ -367,7 +366,7 @@ class ComposePluginRegistrar : org.jetbrains.kotlin.compiler.plugin.ComponentReg
             }
         }
 
-        fun ExtensionStorage.registerCommonExtensions(
+        fun registerCommonExtensions(
             project: Project,
             hideFromObjCDeclarationsSet: HideFromObjCDeclarationsSet?
         ) {
@@ -400,7 +399,7 @@ class ComposePluginRegistrar : org.jetbrains.kotlin.compiler.plugin.ComponentReg
             FirExtensionRegistrarAdapter.registerExtension(project, ComposeFirExtensionRegistrar())
             if (hideFromObjCDeclarationsSet != null) {
                 DescriptorSerializerPlugin.registerExtension(
-                    AddHiddenFromObjCSerializationPlugin(hideFromObjCDeclarationsSet)
+                    project, AddHiddenFromObjCSerializationPlugin(hideFromObjCDeclarationsSet)
                 )
             }
         }

@@ -54,6 +54,8 @@ abstract class AndroidXComposeMultiplatformExtension {
       */
     abstract fun darwin(): Unit
 
+    abstract fun ohosArm64(): Unit
+
     /**
      * Provides the default target configuration and source set dependencies
      * for all linuxX64 native targets.

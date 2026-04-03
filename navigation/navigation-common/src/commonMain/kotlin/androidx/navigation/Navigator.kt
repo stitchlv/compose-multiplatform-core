@@ -67,7 +67,7 @@ public expect abstract class Navigator<D : NavDestination> {
      * it is not guaranteed that every destination will be created through this method.
      * @return a new NavDestination
      */
-    public abstract fun createDestination(): D
+    public open fun createDestination(): D?
 
     /**
      * Navigate to a destination.

@@ -1,6 +1,8 @@
 /*
  * Copyright 2022 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +42,12 @@ import kotlinx.coroutines.CancellationException
  */
 @OptIn(ExperimentalContracts::class)
 internal class BringIntoViewRequestPriorityQueue {
+    companion object {
+        private val INTERRUPTED_EXCEPTION = CancellationException(
+            "bringIntoView call interrupted by a newer, non-overlapping call"
+        )
+    }
+
     private val requests = mutableVectorOf<Request>()
 
     val size: Int get() = requests.size
@@ -81,14 +89,11 @@ internal class BringIntoViewRequestPriorityQueue {
                 // The new request and the current item do not fully overlap, so cancel the
                 // current item and all requests after it, remove them, then continue the
                 // search to the next-largest request.
-                val cause = CancellationException(
-                    "bringIntoView call interrupted by a newer, non-overlapping call"
-                )
                 for (j in requests.size - 1..i) {
                     // This mutates the list while iterating, but since we're iterating
                     // backwards in both cases, it's fine.
                     // Cancelling the continuation will remove the request from the queue.
-                    requests[i].continuation.cancel(cause)
+                    requests[i].continuation.cancel(INTERRUPTED_EXCEPTION)
                 }
             }
             // Otherwise the new request fully contains the current item, so keep searching up

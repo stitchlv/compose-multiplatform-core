@@ -19,14 +19,14 @@ package androidx.navigation
 import androidx.core.bundle.Bundle
 
 public actual class NoOpNavigator : Navigator<NavDestination>("NoOp") {
-    override fun createDestination(): NavDestination = NavDestination(this)
+    override fun createDestination(): NavDestination? = NavDestination(this)
 
     override fun navigate(
         destination: NavDestination,
         args: Bundle?,
         navOptions: NavOptions?,
         navigatorExtras: Extras?
-    ): NavDestination = destination
+    ): NavDestination? = destination
 
     override fun popBackStack(): Boolean = true
 }

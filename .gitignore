@@ -1,4 +1,5 @@
 /unbundled-build
+.kotlin/
 .classpath
 .gradle
 **/.idea/**
@@ -8,12 +9,14 @@
 !.idea/codeStyles/Project.xml
 !.idea/codeStyles/codeStyleConfig.xml
 !.idea/copyright/AndroidCopyright.xml
+!.idea/copyright/Bytedance.xml
 !.idea/copyright/profiles_settings.xml
 !.idea/inspectionProfiles/Project_Default.xml
 .project
 .settings/
 project.properties
 local.properties
+local.build.properties
 **/bin
 **/gen
 *.iml
@@ -39,3 +42,5 @@ __pycache__
 
 # Don't ignore src files under build package
 !**/src/**/build
+/jbdeps/android-sdk/.java-version
+/.java-version

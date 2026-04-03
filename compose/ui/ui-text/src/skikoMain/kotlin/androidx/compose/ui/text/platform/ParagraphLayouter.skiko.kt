@@ -73,6 +73,10 @@ internal class ParagraphLayouter(
         textDirection = textDirection
     )
     private var paragraphCache: Paragraph? = null
+        set(value) {
+            field?.close()
+            field = value
+        }
     private var width: Float = Float.NaN
 
     val defaultFont get() = builder.defaultFont

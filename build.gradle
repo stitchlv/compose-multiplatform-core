@@ -21,6 +21,21 @@ buildscript {
     SdkHelperKt.setSupportRootFolder(project, project.projectDir)
     SdkHelperKt.writeSdkPathToLocalPropertiesFile(project)
 
+    apply from: "${rootDir}/build_properties.gradle"
+    def buildProperties = extensions.findByName("build_properties")
+
+    repositories {
+        def customUrl = buildProperties.get("custom_maven_url")
+        if (customUrl != null && customUrl != "") {
+            maven {
+                url = customUrl
+            }
+        }
+        maven {
+            url = "https://artifact.bytedance.com/repository/releases"
+        }
+    }
+
     // Needed for atomicfu plugin
     apply(from: "buildSrc/repos.gradle")
     repos.addMavenRepositories(repositories)
@@ -41,8 +56,61 @@ if (project.hasProperty("androidx.update.signatures")) {
     apply from: "buildSrc/shared-dependencies.gradle"
 }
 
+def buildProperties = extensions.findByName("build_properties")
+
 allprojects {
     this.tasks.configureEach {
         if (it.name == "kotlinStoreYarnLock") it.enabled = false
+    }
+}
+
+allprojects {
+    repositories {
+        def customUrl = buildProperties.get("custom_maven_url")
+        if (customUrl != null && customUrl != "") {
+            maven {
+                url = customUrl
+            }
+        }
+        maven {
+            url = "https://artifact.bytedance.com/repository/releases"
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.name == "kotlinx-coroutines-test" &&
+                    details.requested.group == "org.jetbrains.kotlinx") {
+                details.useVersion "1.8.1-bytekmp.2"
+            }
+            else if (details.requested.name == "kotlinx-coroutines-core" &&
+                    details.requested.group == "org.jetbrains.kotlinx") {
+                details.useVersion "1.8.1-bytekmp.2"
+            }
+            else if (details.requested.name == "kotlin-test-junit" &&
+                    details.requested.group == "org.jetbrains.kotlin") {
+                details.useVersion "1.9.22"
+            }
+            else if (details.requested.name == "kotlinx-coroutines-android" &&
+                    details.requested.group == "org.jetbrains.kotlinx") {
+                details.useVersion "1.8.1"
+            }
+            else if(details.requested.name == "atomicfu" &&
+                    details.requested.group == "org.jetbrains.kotlinx") {
+                details.useVersion("0.25.0-bytekmp.4")
+            }
+            else if(details.requested.name == "skiko-js-wasm-runtime" &&
+                    details.requested.group == "org.jetbrains.skiko") {
+                details.useVersion("0.8.4")
+            }
+            else if(details.requested.name == "skiko-awt-runtime-macos-arm64" &&
+                    details.requested.group == "org.jetbrains.skiko") {
+                details.useVersion("0.8.4")
+            }
+            else if(details.requested.name == "paging-common" &&
+                    details.requested.group == "androidx.paging") {
+                details.useVersion("2.1.1")
+            }
+        }
     }
 }

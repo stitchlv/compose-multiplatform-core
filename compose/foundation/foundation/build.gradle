@@ -94,6 +94,7 @@ if (AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         darwin()
         js()
         wasm()
+        ohosArm64()
 
         configureDarwinFlags()
     }
@@ -220,6 +221,10 @@ if (AndroidXComposePlugin.isMultiplatformEnabled(project)) {
                 }
             }
             desktopTest.kotlin.srcDirs("src/desktopTest/kotlin")
+
+            ohosArm64Main {
+                dependsOn(commonMain)
+            }
 
             nativeTest.dependsOn(jsNativeTest)
             jsTest.dependsOn(jsNativeTest)

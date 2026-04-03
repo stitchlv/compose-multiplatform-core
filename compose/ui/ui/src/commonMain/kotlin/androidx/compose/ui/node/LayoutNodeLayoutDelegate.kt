@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -601,8 +603,9 @@ internal class LayoutNodeLayoutDelegate(
          * Return true if the measured size has been changed
          */
         fun remeasure(constraints: Constraints): Boolean {
-            require(!layoutNode.isDeactivated) {
-                "measure is called on a deactivated node"
+            if (layoutNode.isDeactivated) {
+                println("[error!] MeasurePassDelegate: measure is called on a deactivated node")
+                return false
             }
             val owner = layoutNode.requireOwner()
             val parent = layoutNode.parent
@@ -729,8 +732,9 @@ internal class LayoutNodeLayoutDelegate(
             zIndex: Float,
             layerBlock: (GraphicsLayerScope.() -> Unit)?
         ) {
-            require(!layoutNode.isDeactivated) {
-                "place is called on a deactivated node"
+            if (layoutNode.isDeactivated) {
+                println("place is called on a deactivated node")
+                return
             }
             layoutState = LayoutState.LayingOut
 
@@ -1321,8 +1325,9 @@ internal class LayoutNodeLayoutDelegate(
             zIndex: Float,
             layerBlock: (GraphicsLayerScope.() -> Unit)?
         ) {
-            require(!layoutNode.isDeactivated) {
-                "place is called on a deactivated node"
+            if (layoutNode.isDeactivated) {
+                println("place is called on a deactivated node")
+                return
             }
             layoutState = LayoutState.LookaheadLayingOut
             placedOnce = true

@@ -92,6 +92,7 @@ internal actual fun createSnapshotMutableLongState(
 
 internal actual fun createSnapshotMutableFloatState(
     value: Float
+
 ): MutableFloatState = SnapshotMutableFloatStateImpl(value)
 
 internal actual fun createSnapshotMutableDoubleState(
@@ -102,3 +103,5 @@ internal actual fun logError(message: String, e: Throwable) {
     System.err.println(message)
     e.printStackTrace(System.err)
 }
+
+actual fun handleComposeStateChange(state: Int) {}

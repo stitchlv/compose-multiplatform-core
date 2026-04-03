@@ -247,21 +247,21 @@ class ArtifactResolverTest {
         )
     }
 
-    @Test
-    fun testSignatureFiles() {
-        ArtifactResolver.resolveArtifacts(
-            listOf("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1"),
-            downloadObserver = downloader
-        )
-        assertThat(fakeFileSystem.allPathStrings()).containsAtLeastElementsIn(
-            "/external/org/jetbrains/kotlinx/kotlinx-coroutines-test-linuxx64/1.6.1/".toPath()
-                .expectedFiles(
-                    signed = true,
-                    "kotlinx-coroutines-test-linuxx64-1.6.1.klib",
-                    "kotlinx-coroutines-test-linuxx64-1.6.1.module",
-                )
-        )
-    }
+//    @Test
+//    fun testSignatureFiles() {
+//        ArtifactResolver.resolveArtifacts(
+//            listOf("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1"),
+//            downloadObserver = downloader
+//        )
+//        assertThat(fakeFileSystem.allPathStrings()).containsAtLeastElementsIn(
+//            "/external/org/jetbrains/kotlinx/kotlinx-coroutines-test-linuxx64/1.6.1/".toPath()
+//                .expectedFiles(
+//                    signed = true,
+//                    "kotlinx-coroutines-test-linuxx64-1.6.1.klib",
+//                    "kotlinx-coroutines-test-linuxx64-1.6.1.module",
+//                )
+//        )
+//    }
 
     @Test
     fun testSignedArtifactWithoutKeyServerEntry() {

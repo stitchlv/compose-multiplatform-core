@@ -31,7 +31,8 @@ internal class DefaultTextToolbar : TextToolbar {
         onCopyRequested: (() -> Unit)?,
         onPasteRequested: (() -> Unit)?,
         onCutRequested: (() -> Unit)?,
-        onSelectAllRequested: (() -> Unit)?
+        onSelectAllRequested: (() -> Unit)?,
+        onPasteResult: ((String) -> Unit)?
     ) {
     }
 }

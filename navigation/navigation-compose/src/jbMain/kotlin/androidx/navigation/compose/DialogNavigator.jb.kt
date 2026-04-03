@@ -43,7 +43,7 @@ public actual class DialogNavigator : Navigator<Destination>(NAME) {
         }
     }
 
-    override fun createDestination(): Destination {
+    override fun createDestination(): Destination? {
         return Destination(this) { }
     }
 

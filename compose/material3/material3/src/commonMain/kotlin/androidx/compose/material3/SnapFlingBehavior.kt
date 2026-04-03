@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -73,7 +75,7 @@ internal class SnapFlingBehavior(
             0f
         }
 
-    private val velocityThreshold = with(density) { MinFlingVelocityDp.toPx() }
+    private val velocityThreshold = with(density) { 400.dp.toPx() }
     private var motionScaleDuration = object : MotionDurationScale {
         override val scaleFactor: Float
             get() = DefaultScrollMotionDurationScaleFactor

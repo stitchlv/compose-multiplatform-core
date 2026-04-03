@@ -49,6 +49,7 @@ androidXMultiplatform {
     ios()
     js()
     wasm()
+    ohosArm64()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
@@ -68,6 +69,7 @@ kotlin {
     tvosSimulatorArm64()
     // TODO: mingwX64 requires Lock actual implementation.
     //  Or copy approach from :collection:collection - use unstable atomicFu
+    ohosArm64()
 
     explicitApi = ExplicitApiMode.Strict
 
@@ -145,6 +147,8 @@ kotlin {
                         dependsOn(darwinMain)
                     } else if (konanTargetFamily == Family.LINUX) {
                         dependsOn(linuxMain)
+                    } else if (konanTargetFamily == Family.OHOS) {
+                        dependsOn(nativeMain)
                     } else {
                         throw new GradleException("unknown native target ${target}")
                     }

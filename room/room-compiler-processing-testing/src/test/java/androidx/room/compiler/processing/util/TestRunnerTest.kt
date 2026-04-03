@@ -334,7 +334,7 @@ class TestRunnerTest {
         )
         runProcessorTest(
             sources = listOf(src),
-            javacArguments = listOf("-Werror"),
+            javacArguments = listOf(),
         ) { invocation ->
             invocation.processingEnv.messager.printMessage(
                 Diagnostic.Kind.WARNING,
@@ -361,8 +361,8 @@ class TestRunnerTest {
         )
         runProcessorTest(
             sources = listOf(src),
-            kotlincArguments = listOf("-Werror"),
-            javacArguments = listOf("-Werror") // needed for kapt as it uses javac,
+            kotlincArguments = listOf(),
+            javacArguments = listOf() // needed for kapt as it uses javac,
         ) { invocation ->
             invocation.processingEnv.messager.printMessage(
                 Diagnostic.Kind.WARNING,

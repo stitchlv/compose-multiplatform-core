@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -838,6 +840,9 @@ private class DefaultPagerNestedScrollConnection(
     val state: PagerState,
     val orientation: Orientation
 ) : NestedScrollConnection {
+    companion object {
+        private val END_SCROLL_EXCEPTION = CancellationException("End of scrollable area reached")
+    }
 
     fun Velocity.consumeOnOrientation(orientation: Orientation): Velocity {
         return if (orientation == Orientation.Vertical) {
@@ -896,7 +901,7 @@ private class DefaultPagerNestedScrollConnection(
         source: NestedScrollSource
     ): Offset {
         if (source == NestedScrollSource.Fling && available.mainAxis() != 0f) {
-            throw CancellationException("End of scrollable area reached")
+            throw END_SCROLL_EXCEPTION
         }
         return Offset.Zero
     }

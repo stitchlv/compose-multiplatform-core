@@ -38,13 +38,14 @@ enum class PlatformGroup {
     WASM,
     MAC,
     LINUX,
+    OHOS,
     DESKTOP;
 
     companion object {
         /**
          * Target platform groups which require native compilation (e.g. LLVM).
          */
-        val native = listOf(MAC, LINUX)
+        val native = listOf(MAC, LINUX, OHOS)
 
         /**
          * Target platform groups which are enabled by default.
@@ -52,7 +53,7 @@ enum class PlatformGroup {
          * Do *not* enable [JS] unless you have read and understand this:
          * https://blog.jetbrains.com/kotlin/2021/10/important-ua-parser-js-exploit-and-kotlin-js/
          */
-        val enabledByDefault = listOf(JVM, DESKTOP, LINUX, MAC, JS, WASM)
+        val enabledByDefault = listOf(JVM, DESKTOP, LINUX, MAC, JS, WASM, OHOS)
     }
 }
 
@@ -74,6 +75,7 @@ enum class PlatformIdentifier(
     IOS_SIMULATOR_ARM_64("iossimulatorarm64", PlatformGroup.MAC),
     IOS_X_64("iosx64", PlatformGroup.MAC),
     IOS_ARM_64("iosarm64", PlatformGroup.MAC),
+    OHOS_ARM_64("ohosarm64", PlatformGroup.OHOS),
     DESKTOP("desktop", PlatformGroup.JVM);
 
     companion object {
@@ -128,6 +130,8 @@ fun Project.enableJs(): Boolean = enabledKmpPlatforms.contains(PlatformGroup.JS)
 fun Project.enableWasm(): Boolean = enabledKmpPlatforms.contains(PlatformGroup.WASM)
 fun Project.enableMac(): Boolean =
     enabledKmpPlatforms.contains(PlatformGroup.MAC) || Multiplatform.isKotlinNativeEnabled(this)
+fun Project.enableOhos(): Boolean =
+    enabledKmpPlatforms.contains(PlatformGroup.OHOS) || Multiplatform.isKotlinNativeEnabled(this)
 fun Project.enableLinux(): Boolean =
     enabledKmpPlatforms.contains(PlatformGroup.LINUX) || Multiplatform.isKotlinNativeEnabled(this)
 fun Project.enableJvm(): Boolean = enabledKmpPlatforms.contains(PlatformGroup.JVM)

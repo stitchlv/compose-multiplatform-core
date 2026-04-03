@@ -43,6 +43,7 @@ androidXComposeMultiplatform {
     darwin()
     js()
     wasm()
+    ohosArm64()
 }
 
 kotlin {
@@ -76,6 +77,7 @@ kotlin {
 
         jbMain.dependsOn(commonMain)
         nativeMain.dependsOn(jbMain)
+        ohosArm64.dependsOn(jbMain)
 
         targets.all { target ->
             if (target.platformType !in [KotlinPlatformType.androidJvm, KotlinPlatformType.common]) {

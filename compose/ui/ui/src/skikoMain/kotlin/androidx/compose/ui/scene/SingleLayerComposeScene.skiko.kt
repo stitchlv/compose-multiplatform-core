@@ -27,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.pointer.InteropViewCatchPointerModifier
 import androidx.compose.ui.input.pointer.PointerInputEvent
 import androidx.compose.ui.node.RootNodeOwner
 import androidx.compose.ui.platform.setContent
@@ -159,6 +160,10 @@ private class SingleLayerComposeSceneImpl(
     @Deprecated("To be removed. Temporary hack for iOS interop")
     override fun hitTestInteropView(position: Offset): Boolean {
         return mainOwner.hitTestInteropView(position)
+    }
+
+    override fun getHitTestInteropModifier(position: Offset): InteropViewCatchPointerModifier? {
+        return mainOwner.getHitTestInteropModifier(position)
     }
 
     override fun processPointerInputEvent(event: PointerInputEvent) =

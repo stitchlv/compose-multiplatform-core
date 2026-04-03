@@ -48,7 +48,7 @@ public actual class ComposeNavigator : Navigator<Destination>(NAME) {
         isPop.value = false
     }
 
-    override fun createDestination(): Destination {
+    override fun createDestination(): Destination? {
         return Destination(this) { }
     }
 

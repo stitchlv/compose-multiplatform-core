@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -386,9 +388,11 @@ fun LaunchedEffect(
     remember(key1, key2, key3) { LaunchedEffectImpl(applyContext, block) }
 }
 
-private class LeftCompositionCancellationException : PlatformOptimizedCancellationException(
+private object InnerLeftCompositionCancellationException : PlatformOptimizedCancellationException(
     "The coroutine scope left the composition"
 )
+
+private fun LeftCompositionCancellationException(): PlatformOptimizedCancellationException = InnerLeftCompositionCancellationException
 
 /**
  * When [LaunchedEffect] enters the composition it will launch [block] into the composition's

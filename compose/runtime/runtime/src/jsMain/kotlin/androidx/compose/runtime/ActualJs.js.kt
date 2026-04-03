@@ -105,3 +105,5 @@ internal actual fun logError(message: String, e: Throwable) {
 internal actual fun currentThreadId(): Long = 0
 
 internal actual fun currentThreadName(): String = "main"
+
+actual fun handleComposeStateChange(state: Int) {}

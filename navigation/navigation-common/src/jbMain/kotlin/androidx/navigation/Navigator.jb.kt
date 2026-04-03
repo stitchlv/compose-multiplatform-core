@@ -38,7 +38,9 @@ public actual abstract class Navigator<D : NavDestination>(
         isAttached = true
     }
 
-    public actual abstract fun createDestination(): D
+    public actual open fun createDestination(): D? {
+        return null
+    }
 
     @Suppress("UNCHECKED_CAST")
     public actual open fun navigate(

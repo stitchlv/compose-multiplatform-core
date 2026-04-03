@@ -1,7 +1,18 @@
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 pluginManagement {
+    apply from: "${rootDir}/build_properties.gradle"
+    def buildProperties = settings.extensions.findByName("build_properties")
     repositories {
+        def customUrl = buildProperties.get("custom_maven_url")
+        if (customUrl != null && customUrl != "") {
+            maven {
+                url = customUrl
+            }
+        }
+        maven {
+            url = "https://artifact.bytedance.com/repository/releases"
+        }
         mavenCentral()
         google()
         maven {
@@ -226,6 +237,7 @@ includeProject(":compose:ui:ui-viewbinding:ui-viewbinding-samples", "compose/ui/
 includeProject(":compose:ui:ui:integration-tests:ui-demos")
 includeProject(":compose:ui:ui:ui-samples", "compose/ui/ui/samples")
 includeProject(":compose:ui:ui-uikit")
+includeProject(":compose:ui:ui-ohos")
 
 includeProject(":kruth:kruth")
 

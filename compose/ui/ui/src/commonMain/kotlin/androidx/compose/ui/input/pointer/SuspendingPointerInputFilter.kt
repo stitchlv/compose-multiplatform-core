@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -502,7 +504,7 @@ internal class SuspendingPointerInputModifierNodeImpl(
     override fun resetPointerInputHandler() {
         val localJob = pointerInputJob
         if (localJob != null) {
-            localJob.cancel(PointerInputResetException())
+            localJob.cancel(PointerInputResetException)
             pointerInputJob = null
         }
     }
@@ -746,7 +748,7 @@ internal class SuspendingPointerInputModifierNodeImpl(
  * javaClass.simpleName lookups to build the exception message and stack trace collection.
  * Remove if these are changed in kotlinx.coroutines.
  */
-private class PointerInputResetException : PlatformOptimizedCancellationException("Pointer input was reset")
+private object PointerInputResetException : PlatformOptimizedCancellationException("Pointer input was reset")
 
 /**
  * Also used in place of standard Job cancellation pathway; since we control this code path

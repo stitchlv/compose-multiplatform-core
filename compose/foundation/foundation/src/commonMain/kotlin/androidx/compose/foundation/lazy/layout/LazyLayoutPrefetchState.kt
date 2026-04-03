@@ -1,6 +1,8 @@
 /*
  * Copyright 2021 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,6 +58,6 @@ class LazyLayoutPrefetchState {
 }
 
 @ExperimentalFoundationApi
-private object DummyHandle : LazyLayoutPrefetchState.PrefetchHandle {
+internal object DummyHandle : LazyLayoutPrefetchState.PrefetchHandle {
     override fun cancel() {}
 }

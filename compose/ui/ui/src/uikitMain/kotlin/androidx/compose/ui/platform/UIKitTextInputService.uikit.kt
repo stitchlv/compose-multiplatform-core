@@ -269,7 +269,8 @@ internal class UIKitTextInputService(
         onCopyRequested: (() -> Unit)?,
         onPasteRequested: (() -> Unit)?,
         onCutRequested: (() -> Unit)?,
-        onSelectAllRequested: (() -> Unit)?
+        onSelectAllRequested: (() -> Unit)?,
+        onPasteResult: ((String) -> Unit)?
     ) {
         if (textUIView == null) {
             // If showMenu() is called and textUIView is not created,

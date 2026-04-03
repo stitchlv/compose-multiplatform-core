@@ -367,7 +367,7 @@ private fun configureComposeCompilerPlugin(
         val compilerPluginVersion = project.properties["jetbrains.compose.compiler.version"] as String
         project.dependencies.add(
             COMPILER_PLUGIN_CONFIGURATION,
-            "org.jetbrains.compose.compiler:compiler:$compilerPluginVersion"
+            "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:$compilerPluginVersion"
         )
         val kotlinPlugin = configuration.incoming.artifactView { view ->
             view.attributes { attributes ->

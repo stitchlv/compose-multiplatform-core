@@ -18,7 +18,7 @@ package androidx.compose.ui
 
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CancellationException
 
 // TODO: For non-JVM platforms, you can revive the kotlin-reflect implementation from
 //  https://android-review.googlesource.com/c/platform/frameworks/support/+/2441379

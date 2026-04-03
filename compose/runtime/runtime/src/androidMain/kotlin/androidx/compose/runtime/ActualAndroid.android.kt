@@ -123,3 +123,5 @@ internal actual val MainThreadId: Long =
         // This branch intercepts that exception and returns default value for such cases.
         -1
     }
+
+actual fun handleComposeStateChange(state: Int) {}

@@ -1,5 +1,6 @@
 import androidx.build.jetbrains.ArtifactRedirecting
 import androidx.build.jetbrains.artifactRedirecting
+import java.net.URI
 import org.jetbrains.compose.internal.publishing.*
 
 plugins {
@@ -7,7 +8,13 @@ plugins {
 }
 
 buildscript {
+    apply(from = "${rootDir}/build_properties.gradle")
+    val map = extensions.getByName("build_properties") as Map<String, Any?>
     repositories {
+        map.get("custom_maven_url")?.let {
+            maven(url = uri(it))
+        }
+        maven(url = "https://artifact.bytedance.com/repository/releases")
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/internal")
         maven("https://maven.pkg.jetbrains.space/public/p/space/maven")
@@ -25,6 +32,7 @@ open class ComposePublishingTask : AbstractComposePublishingTask() {
 }
 
 val composeProperties = ComposeProperties(project)
+val buildProperties = extensions.findByName("build_properties") as Map<String, Any?>
 
 // TODO: Align with other modules
 val viewModelPlatforms = ComposePlatforms.ALL_AOSP - ComposePlatforms.WINDOWS_NATIVE
@@ -97,6 +105,10 @@ val mainComponents =
         ),
         ComposeComponent(":compose:ui:ui-unit"),
         ComposeComponent(":compose:ui:ui-util"),
+        ComposeComponent(
+            ":compose:ui:ui-ohos",
+            supportedPlatforms = ComposePlatforms.OHOS
+        )
     )
 
 val iconsComponents =
@@ -105,19 +117,20 @@ val iconsComponents =
     )
 
 fun ComposePublishingTask.mainPublications() {
-    publish(
-        ":compose:desktop:desktop",
-        onlyWithPlatforms = setOf(ComposePlatforms.Desktop),
-        publications = listOf(
-            "KotlinMultiplatform",
-            "Jvm",
-            "Jvmlinux-x64",
-            "Jvmlinux-arm64",
-            "Jvmmacos-x64",
-            "Jvmmacos-arm64",
-            "Jvmwindows-x64"
-        )
-    )
+//    publish(
+//        ":compose:mpp:demo",
+//        onlyWithPlatforms = setOf(ComposePlatforms.OhosArm64),
+//        publications = listOf(
+//            "KotlinMultiplatform",
+////            "Jvm",
+//            "OhosArm64",
+////            "Jvmlinux-x64",
+////            "Jvmlinux-arm64",
+////            "Jvmmacos-x64",
+////            "Jvmmacos-arm64",
+////            "Jvmwindows-x64"
+//        )
+//    )
 
     mainComponents.forEach { publishMultiplatform(it) }
 }
@@ -138,11 +151,69 @@ tasks.register("publishComposeJbToMavenLocal", ComposePublishingTask::class) {
     mainPublications()
 }
 
+tasks.register("publishComposeJbToBuildRepo", ComposePublishingTask::class) {
+    mainComponents.forEach {
+        val mavenPlugin = pluginManager.findPlugin("maven-publish")
+        mavenPlugin ?: return@forEach
+//        mavenPlugin ?: throw GradleException("该 project ${it.path} 未使用 maven publish 发布组件，请确认是否为非发布组件")
+        val publishing = project.rootProject.findProject(it.path)!!.extensions.findByType(PublishingExtension::class.java)
+        publishing?.repositories {
+            maven {
+                name = "CustomMaven" //  optional target repository name
+                url = URI.create(buildProperties["custom_maven_publish_url"]?.toString() ?: "")
+                credentials {
+                    username = buildProperties["custom_maven_publish_username"]?.toString() ?: ""
+                    password = buildProperties["custom_maven_publish_password"]?.toString() ?: ""
+                }
+            }
+            maven {
+                name = "BuildRepo"
+                url = uri("${rootProject.rootDir}/out/repo")
+            }
+        }
+    }
+    repository = "BuildRepoRepository"
+    mainPublications()
+}
+
+tasks.register("publishComposeJbToMavenRepo", ComposePublishingTask::class) {
+    mainComponents.forEach {
+        val mavenPlugin = pluginManager.findPlugin("maven-publish")
+        mavenPlugin ?: return@forEach
+//        mavenPlugin ?: throw GradleException("该 project ${it.path} 未使用 maven publish 发布组件，请确认是否为非发布组件")
+        val publishing = project.rootProject.findProject(it.path)!!.extensions.findByType(PublishingExtension::class.java)
+        publishing?.repositories {
+            maven {
+                name = "CustomMaven" //  optional target repository name
+                url = URI.create(buildProperties["custom_maven_publish_url"]?.toString() ?: "")
+                credentials {
+                    username = buildProperties["custom_maven_publish_username"]?.toString() ?: ""
+                    password = buildProperties["custom_maven_publish_password"]?.toString() ?: ""
+                }
+            }
+            maven {
+                name = "BuildRepo"
+                url = uri("${rootProject.rootDir}/out/repo")
+            }
+        }
+    }
+    repository = "CustomMavenRepository"
+    mainPublications()
+}
+
 // separate task that cannot be built in parallel (because it requires too much RAM).
 // should be run with "--max-workers=1"
 tasks.register("publishComposeJbExtendedIcons", ComposePublishingTask::class) {
     repository = "MavenRepository"
     iconsPublications()
+}
+
+tasks.register("publishOhos") {
+    mainComponents.forEach {
+        if (it.supportedPlatforms.contains(ComposePlatforms.OhosArm64)) {
+            dependsOn("${it.path}:publishOhos")
+        }
+    }
 }
 
 tasks.register("publishComposeJbExtendedIconsToMavenLocal", ComposePublishingTask::class) {

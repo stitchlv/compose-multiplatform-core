@@ -71,6 +71,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         js()
         wasm()
         darwin()
+        ohosArm64()
 
         configureDarwinFlags()
     }
@@ -141,6 +142,13 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
 
             nativeMain.dependsOn(jsNativeMain)
             nativeMain.dependsOn(skikoExcludingWebMain)
+
+            ohosArm64Main {
+                dependsOn(commonMain)
+                dependencies {
+                    implementation(project(":compose:ui:ui-ohos"))
+                }
+            }
 
             // TODO(b/214407011): These dependencies leak into instrumented tests as well. If you
             //  need to add Robolectric (which must be kept out of androidAndroidTest), use a top

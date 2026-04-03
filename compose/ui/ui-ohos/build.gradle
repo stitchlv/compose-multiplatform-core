@@ -1,0 +1,48 @@
+import androidx.build.AndroidXComposePlugin
+import androidx.build.JetbrainsAndroidXPlugin
+import androidx.build.LibraryType
+
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.library")
+    id("AndroidXComposePlugin")
+    id("JetbrainsAndroidXPlugin")
+}
+
+AndroidXComposePlugin.applyAndConfigureKotlinPlugin(project)
+JetbrainsAndroidXPlugin.applyAndConfigure(project)
+
+if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
+    androidXComposeMultiplatform {
+        ohosArm64()
+    }
+
+    kotlin {
+        sourceSets {
+            configureEach {
+                languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            }
+
+            commonMain.dependencies {
+                implementation(libs.kotlinStdlibCommon)
+                implementation(project(":compose:runtime:runtime"))
+                implementation(project(":compose:ui:ui-util"))
+            }
+            ohosMain.dependencies {
+                api(libs.harko)
+            }
+        }
+    }
+}
+
+androidx {
+    name = "Compose Ohos"
+    type = LibraryType.PUBLISHED_LIBRARY
+    inceptionYear = "2025"
+    description = "Internal ohos utilities"
+    legacyDisableKotlinStrictApiMode = true
+}
+
+android {
+    namespace "androidx.compose.ui.ohos"
+}

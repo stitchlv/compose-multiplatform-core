@@ -19,6 +19,7 @@ androidXComposeMultiplatform {
     js()
     wasm()
     darwin()
+    ohosArm64()
 
     linuxX64()
     linuxArm64()

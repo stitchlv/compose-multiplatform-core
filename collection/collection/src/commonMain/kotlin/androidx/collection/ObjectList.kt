@@ -969,22 +969,22 @@ public class MutableObjectList<E>(
         return false
     }
 
-    /**
-     * Removes all elements in this list for which [predicate] returns `true`.
-     */
-    public inline fun removeIf(predicate: (element: E) -> Boolean) {
-        var gap = 0
-        val size = _size
-        val content = content
-        for (i in indices) {
-            content[i - gap] = content[i]
-            if (predicate(content[i] as E)) {
-                gap++
-            }
-        }
-        content.fill(null, fromIndex = size - gap, toIndex = size)
-        _size -= gap
-    }
+//    /**
+//     * Removes all elements in this list for which [predicate] returns `true`.
+//     */
+//    public inline fun removeIf(predicate: (element: E) -> Boolean) {
+//        var gap = 0
+//        val size = _size
+//        val content = content
+//        for (i in indices) {
+//            content[i - gap] = content[i]
+//            if (predicate(content[i] as E)) {
+//                gap++
+//            }
+//        }
+//        content.fill(null, fromIndex = size - gap, toIndex = size)
+//        _size -= gap
+//    }
 
     /**
      * Removes all [elements] from the [MutableObjectList] and returns `true` if anything was removed.

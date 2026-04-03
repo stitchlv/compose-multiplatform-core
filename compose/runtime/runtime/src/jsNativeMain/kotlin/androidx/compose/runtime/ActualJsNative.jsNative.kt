@@ -17,7 +17,7 @@
 package androidx.compose.runtime
 
 import androidx.compose.runtime.snapshots.SnapshotMutableState
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CancellationException
 
 internal actual fun <T> createSnapshotMutableState(
     value: T,

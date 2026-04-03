@@ -1,6 +1,8 @@
 /*
  * Copyright 2019 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +20,7 @@ package androidx.compose.runtime
 
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotContextElement
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -103,7 +106,11 @@ internal expect fun <T> invokeComposableForResult(
 @OptIn(ExperimentalComposeApi::class)
 internal expect class SnapshotContextElementImpl(
     snapshot: Snapshot
-) : SnapshotContextElement
+) : SnapshotContextElement {
+    companion object Key : CoroutineContext.Key<SnapshotContextElement>
+
+    public override val key: CoroutineContext.Key<*>
+}
 
 internal expect fun logError(message: String, e: Throwable)
 
@@ -118,3 +125,5 @@ internal expect fun currentThreadName(): String
 internal expect abstract class PlatformOptimizedCancellationException(
     message: String? = null
 ) : CancellationException
+
+expect fun handleComposeStateChange(state: Int)

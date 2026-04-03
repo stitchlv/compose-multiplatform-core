@@ -22,6 +22,7 @@ import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.platform.FlushCoroutineDispatcher
 import androidx.compose.ui.util.trace
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -41,6 +42,9 @@ internal class ComposeSceneRecomposer(
     coroutineContext: CoroutineContext,
     vararg elements: CoroutineContext.Element
 ) {
+    companion object {
+        private val CANCEL_EXCEPTION = CancellationException("ComposeSceneRecomposer cancel")
+    }
     private val job = Job()
     private val coroutineScope = CoroutineScope(coroutineContext + job)
 
@@ -105,6 +109,6 @@ internal class ComposeSceneRecomposer(
      */
     fun cancel() {
         recomposer.cancel()
-        job.cancel()
+        job.cancel(CANCEL_EXCEPTION)
     }
 }

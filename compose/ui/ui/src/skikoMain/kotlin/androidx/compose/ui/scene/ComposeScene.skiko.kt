@@ -242,6 +242,15 @@ interface ComposeScene {
     fun hitTestInteropView(position: Offset): Boolean
 
     /**
+     * If [position] is inside interop view, then [ComposeScene] skip touches to forward it to
+     * platform interop view.
+     *
+     * @see InteropViewCatchPointerModifier
+     */
+    @Deprecated("To be removed. Temporary hack for iOS interop")
+    fun getHitTestInteropModifier(position: Offset): InteropViewCatchPointerModifier?
+
+    /**
      * Creates a new [ComposeSceneLayer] with the specified parameters.
      * It's used to create a new layer for [Popup] or [Dialog].
      *

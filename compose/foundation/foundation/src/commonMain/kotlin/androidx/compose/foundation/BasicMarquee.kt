@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -66,6 +68,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sign
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -207,6 +210,9 @@ private class MarqueeModifierNode(
     LayoutModifierNode,
     DrawModifierNode,
     FocusEventModifierNode {
+        companion object {
+            private val ANIM_CANCEL_EXCEPTION = CancellationException("MarqueeModifierNode anim cancel")
+        }
 
     private var contentWidth by mutableIntStateOf(0)
     private var containerWidth by mutableIntStateOf(0)
@@ -232,7 +238,7 @@ private class MarqueeModifierNode(
     }
 
     override fun onDetach() {
-        animationJob?.cancel()
+        animationJob?.cancel(ANIM_CANCEL_EXCEPTION)
         animationJob = null
     }
 
@@ -339,7 +345,7 @@ private class MarqueeModifierNode(
 
     private fun restartAnimation() {
         val oldJob = animationJob
-        oldJob?.cancel()
+        oldJob?.cancel(ANIM_CANCEL_EXCEPTION)
         if (isAttached) {
             animationJob = coroutineScope.launch {
                 // Wait for the cancellation to finish.

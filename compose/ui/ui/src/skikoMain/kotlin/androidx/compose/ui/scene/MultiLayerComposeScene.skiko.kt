@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyInputElement
+import androidx.compose.ui.input.pointer.InteropViewCatchPointerModifier
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputEvent
@@ -228,6 +229,17 @@ private class MultiLayerComposeSceneImpl(
             }
         }
         return mainOwner.hitTestInteropView(position)
+    }
+
+    override fun getHitTestInteropModifier(position: Offset): InteropViewCatchPointerModifier? {
+        forEachLayerReversed { layer ->
+            if (layer.isInBounds(position)) {
+                return layer.owner.getHitTestInteropModifier(position)
+            } else if (layer == focusedLayer) {
+                return null
+            }
+        }
+        return mainOwner.getHitTestInteropModifier(position)
     }
 
     override fun processPointerInputEvent(event: PointerInputEvent) {

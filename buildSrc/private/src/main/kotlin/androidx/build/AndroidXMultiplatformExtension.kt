@@ -221,6 +221,18 @@ open class AndroidXMultiplatformExtension(val project: Project) {
         } else { null }
     }
 
+    @JvmOverloads
+    fun ohosArm64(
+        block: Action<KotlinNativeTarget>? = null
+    ): KotlinNativeTarget? {
+        requestedPlatforms.add(PlatformIdentifier.OHOS_ARM_64)
+        return if (project.enableOhos()) {
+            kotlinExtension.iosArm64().also {
+                block?.execute(it)
+            }
+        } else { null }
+    }
+
     /**
      * Configures all ios targets supported by AndroidX.
      */

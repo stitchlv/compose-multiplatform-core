@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1053,8 +1055,12 @@ internal class TextFieldSelectionState(
      * Then the selection should collapse, and the new cursor offset should be at the end of the
      * newly added text.
      */
-    fun paste() {
-        val clipboardText = clipboardManager?.getText()?.text ?: return
+    fun paste(content: String? = null) {
+        val clipboardText = if (!content.isNullOrEmpty()) {
+            AnnotatedString(content)
+        } else {
+            clipboardManager?.getText()?.text ?: return
+        }
 
         textFieldState.replaceSelectedText(
             clipboardText,
@@ -1075,6 +1081,13 @@ internal class TextFieldSelectionState(
         val paste: (() -> Unit)? = if (editable && clipboardManager?.hasText() == true) {
             {
                 paste()
+                updateTextToolbarState(TextToolbarState.None)
+            }
+        } else null
+
+        val pasteResult: ((String) -> Unit)? = if (editable && clipboardManager?.hasText() == true) {
+            {
+                paste(it)
                 updateTextToolbarState(TextToolbarState.None)
             }
         } else null
@@ -1105,7 +1118,8 @@ internal class TextFieldSelectionState(
             onCopyRequested = copy,
             onPasteRequested = paste,
             onCutRequested = cut,
-            onSelectAllRequested = selectAll
+            onSelectAllRequested = selectAll,
+            onPasteResult = pasteResult
         )
     }
 

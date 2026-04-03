@@ -203,6 +203,11 @@ open class AndroidXComposeMultiplatformExtensionImpl @Inject constructor(
         linuxX64()
     }
 
+
+    override fun ohosArm64(): Unit = multiplatformExtension.run {
+        ohosArm64()
+    }
+
     override fun linuxArm64(): Unit = multiplatformExtension.run {
         linuxArm64()
     }

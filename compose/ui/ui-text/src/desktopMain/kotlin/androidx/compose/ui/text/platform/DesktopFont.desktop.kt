@@ -24,7 +24,7 @@ import org.jetbrains.skia.Data
 import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontSlant
 import org.jetbrains.skia.FontWidth
-import org.jetbrains.skia.makeFromFile
+//import org.jetbrains.skia.makeFromFile
 
 actual sealed class PlatformFont : Font {
     actual abstract val identity: String
@@ -162,26 +162,28 @@ fun Font(
 ): Font = FileFont(file, weight, style)
 
 internal actual fun loadTypeface(font: Font): SkTypeface {
-    if (font !is PlatformFont) {
-        throw IllegalArgumentException("Unsupported font type: $font")
-    }
-    return when (font) {
-        is ResourceFont -> typefaceResource(font.name)
-        // TODO: replace with FontMgr.makeFromFile(font.file.toString())
-        is FileFont -> SkTypeface.makeFromFile(font.file.toString())
-        is LoadedFont -> FontMgr.default.makeFromData(Data.makeFromBytes(font.getData()))
-        is SystemFont -> FontMgr.default.matchFamilyStyle(font.identity, font.skFontStyle)
-    } ?: SkTypeface.makeFromName(SkTypeface.makeDefault().familyName, font.skFontStyle)
+    TODO()
+//    if (font !is PlatformFont) {
+//        throw IllegalArgumentException("Unsupported font type: $font")
+//    }
+//    return when (font) {
+//        is ResourceFont -> typefaceResource(font.name)
+//        // TODO: replace with FontMgr.makeFromFile(font.file.toString())
+//        is FileFont -> SkTypeface.makeFromFile(font.file.toString())
+//        is LoadedFont -> FontMgr.default.makeFromData(Data.makeFromBytes(font.getData()))
+//        is SystemFont -> FontMgr.default.matchFamilyStyle(font.identity, font.skFontStyle)
+//    } ?: SkTypeface.makeFromName(SkTypeface.makeDefault().familyName, font.skFontStyle)
 }
 
 private fun typefaceResource(resourceName: String): SkTypeface {
-    val contextClassLoader = Thread.currentThread().contextClassLoader!!
-    val resource = contextClassLoader.getResourceAsStream(resourceName)
-        ?: (::typefaceResource.javaClass).getResourceAsStream(resourceName)
-        ?: error("Can't load font from $resourceName")
-
-    val bytes = resource.use { it.readAllBytes() }
-    return SkTypeface.makeFromData(Data.makeFromBytes(bytes))
+    TODO()
+//    val contextClassLoader = Thread.currentThread().contextClassLoader!!
+//    val resource = contextClassLoader.getResourceAsStream(resourceName)
+//        ?: (::typefaceResource.javaClass).getResourceAsStream(resourceName)
+//        ?: error("Can't load font from $resourceName")
+//
+//    val bytes = resource.use { it.readAllBytes() }
+//    return SkTypeface.makeFromData(Data.makeFromBytes(bytes))
 }
 
 private val Font.skFontStyle: SkFontStyle

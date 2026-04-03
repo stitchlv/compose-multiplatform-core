@@ -1,6 +1,8 @@
 /*
  * Copyright 2019 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -3503,8 +3505,9 @@ private fun IntArray.auxIndex(address: Int) = (address * Group_Fields_Size).let 
         countOneBits(this[slot + GroupInfo_Offset] shr (Aux_Shift + 1))
 }
 
-private fun IntArray.slotAnchor(address: Int) = (address * Group_Fields_Size).let { slot ->
-    this[slot + DataAnchor_Offset] +
+private fun IntArray.slotAnchor(address: Int): Int {
+    val slot = address * Group_Fields_Size
+    return this[slot + DataAnchor_Offset] +
         countOneBits(this[slot + GroupInfo_Offset] shr Slots_Shift)
 }
 

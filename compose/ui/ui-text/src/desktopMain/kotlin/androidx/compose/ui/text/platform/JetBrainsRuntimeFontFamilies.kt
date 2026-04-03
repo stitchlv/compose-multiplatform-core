@@ -24,7 +24,7 @@ import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import org.jetbrains.skia.FontSlant
-import org.jetbrains.skia.makeFromFile
+//import org.jetbrains.skia.makeFromFile
 
 internal object JetBrainsRuntimeFontFamilies {
 
@@ -79,42 +79,43 @@ internal object JetBrainsRuntimeFontFamilies {
     }
 
     private fun cacheJetBrainsRuntimeEmbeddedFonts() {
-        val field = SunFontManager_jreBundledFontFiles ?: return
-
-        try {
-            field.isAccessible = true
-
-            val fontManager = getSunFontManagerInstance()
-
-            @Suppress("UNCHECKED_CAST")
-            val embeddedFontFileNames = field.get(fontManager) as HashSet<String>
-            val embeddedFontPaths = embeddedFontFileNames.map { jbrEmbeddedFontsPath.resolve(it) }
-                .sortedBy { it.absolutePathString() }
-                .distinctBy { it.absolutePathString() }
-
-            embeddedFontPaths.asSequence()
-                .map { path ->
-                    val absolutePath = path.absolutePathString()
-
-                    // We need to parse the typeface to extract its weight and style
-                    val typeface = org.jetbrains.skia.Typeface.makeFromFile(absolutePath)
-                    val weight = FontWeight(typeface.fontStyle.weight)
-                    val style = when (typeface.fontStyle.slant) {
-                        FontSlant.UPRIGHT -> FontStyle.Normal
-                        FontSlant.ITALIC, FontSlant.OBLIQUE -> FontStyle.Italic
-                    }
-
-                    typeface.familyName to FileFont(File(absolutePath), weight, style)
-                }
-                .distinctBy { (_, font) -> font.file.absolutePath }
-                .groupBy { (familyName, _) -> familyName }
-                .forEach { (identity, fileFonts) ->
-                    val fontFamily = FontListFontFamily(fileFonts.map { it.second })
-                    embeddedFamilies += identity.lowercase() to fontFamily
-                }
-        } finally {
-            field.isAccessible = false
-        }
+        TODO()
+//        val field = SunFontManager_jreBundledFontFiles ?: return
+//
+//        try {
+//            field.isAccessible = true
+//
+//            val fontManager = getSunFontManagerInstance()
+//
+//            @Suppress("UNCHECKED_CAST")
+//            val embeddedFontFileNames = field.get(fontManager) as HashSet<String>
+//            val embeddedFontPaths = embeddedFontFileNames.map { jbrEmbeddedFontsPath.resolve(it) }
+//                .sortedBy { it.absolutePathString() }
+//                .distinctBy { it.absolutePathString() }
+//
+//            embeddedFontPaths.asSequence()
+//                .map { path ->
+//                    val absolutePath = path.absolutePathString()
+//
+//                    // We need to parse the typeface to extract its weight and style
+//                    val typeface = org.jetbrains.skia.Typeface.makeFromFile(absolutePath)
+//                    val weight = FontWeight(typeface.fontStyle.weight)
+//                    val style = when (typeface.fontStyle.slant) {
+//                        FontSlant.UPRIGHT -> FontStyle.Normal
+//                        FontSlant.ITALIC, FontSlant.OBLIQUE -> FontStyle.Italic
+//                    }
+//
+//                    typeface.familyName to FileFont(File(absolutePath), weight, style)
+//                }
+//                .distinctBy { (_, font) -> font.file.absolutePath }
+//                .groupBy { (familyName, _) -> familyName }
+//                .forEach { (identity, fileFonts) ->
+//                    val fontFamily = FontListFontFamily(fileFonts.map { it.second })
+//                    embeddedFamilies += identity.lowercase() to fontFamily
+//                }
+//        } finally {
+//            field.isAccessible = false
+//        }
     }
 
     private fun getSunFontManagerInstance() =

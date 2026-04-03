@@ -16,4 +16,5 @@
 
 package androidx.lifecycle.viewmodel.internal
 
-internal actual val PTHREAD_MUTEX_RECURSIVE: Int = platform.posix.PTHREAD_MUTEX_RECURSIVE.toInt()
+// #define PTHREAD_MUTEX_RECURSIVE 1
+internal actual val PTHREAD_MUTEX_RECURSIVE: Int = 1.toInt()

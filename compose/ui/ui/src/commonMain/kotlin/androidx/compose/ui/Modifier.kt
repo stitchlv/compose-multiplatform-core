@@ -1,6 +1,8 @@
 /*
  * Copyright 2019 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,7 +36,7 @@ import kotlinx.coroutines.cancel
  * javaClass.simpleName lookups to build the exception message and stack trace collection.
  * Remove if these are changed in kotlinx.coroutines.
  */
-private class ModifierNodeDetachedCancellationException : PlatformOptimizedCancellationException(
+private object ModifierNodeDetachedCancellationException : PlatformOptimizedCancellationException(
     "The Modifier.Node was detached"
 )
 
@@ -288,7 +290,7 @@ interface Modifier {
             isAttached = false
 
             scope?.let {
-                it.cancel(ModifierNodeDetachedCancellationException())
+                it.cancel(ModifierNodeDetachedCancellationException)
                 scope = null
             }
         }

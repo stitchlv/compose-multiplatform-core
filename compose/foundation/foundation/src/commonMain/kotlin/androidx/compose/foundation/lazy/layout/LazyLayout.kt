@@ -1,6 +1,8 @@
 /*
  * Copyright 2021 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +22,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -143,6 +146,34 @@ private class LazyLayoutItemReusePolicy(
  * 5 (RecycledViewPool.DEFAULT_MAX_SCRAP) + 2 (Recycler.DEFAULT_CACHE_SIZE)
  */
 private const val MaxItemsToRetainForReuse = 7
+
+/**
+ * The CompositionLocal containing the current Compose [LazyLayoutPrefetchObserver].
+ */
+val LocalLazyLayoutPrefetchObserver = staticCompositionLocalOf<LazyLayoutPrefetchObserver?> {
+    null
+}
+
+interface LazyLayoutPrefetchObserver {
+    /**
+     * Prefetch 任务因为被取消、超出 Prefetch 范围失效
+     */
+    fun onPrefetchRequestInvalid(index: Int, hasPrecompose: Boolean)
+
+    /**
+     * Precompose执行状态，executed=true 表示 Precompose 成功执行，false 表示当前帧时间不够抛到下一帧执行
+     */
+    fun onPrecomposeItem(index: Int, executed: Boolean, averageTime: Long)
+    /**
+     * Premeasure执行状态，executed=true 表示 Premeasure 成功执行，false 表示当前帧时间不够抛到下一帧执行
+     */
+    fun onPreMeasureItem(index: Int, executed: Boolean, averageTime: Long)
+
+    /**
+     * 到达 Prefetch 最大失败次数，Prefetch 功能被禁用
+     */
+    fun onReachLimitTime(limitTime: Int, averageComposeTime: Long, averagePreMeasureTime: Long)
+}
 
 /**
  * Platform specific implementation of lazy layout items prefetching - precomposing next items in

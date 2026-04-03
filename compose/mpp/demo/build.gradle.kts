@@ -147,6 +147,35 @@ kotlin {
             }
         }
     }
+
+    ohosArm64("ohosArm64") {
+        binaries {
+            sharedLib {
+                baseName = "compose_ohos"
+                linkerOpts += listOf(
+                    "-shared",
+                    "-static-libstdc++",
+                    "-lnative_window",
+                    "-lnative_vsync",
+                    "-lace_napi.z",
+                    "-lace_ndk.z",
+                    "-lhilog_ndk.z",
+                    "-luv",
+                    "-lrawfile.z",
+                    "-lEGL",
+                    "-lGLESv3",
+                    "-limage_ndk.z",
+                    "-lnative_image",
+                    "-lm",
+                    "-lpthread",
+                    "-lpixelmap_ndk.z",
+                    "-lqos",
+                )
+                freeCompilerArgs += "-Xdisable-phases=VerifyBitcode"
+            }
+        }
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -202,6 +231,9 @@ kotlin {
         }
 
         val nativeMain by creating { dependsOn(skikoMain) }
+
+        val ohosArm64Main by getting { dependsOn(commonMain) }
+
         val darwinMain by creating { dependsOn(nativeMain) }
         val macosMain by creating { dependsOn(darwinMain) }
         val macosX64Main by getting { dependsOn(macosMain) }

@@ -44,7 +44,8 @@ internal class AndroidTextToolbar(private val view: View) : TextToolbar {
         onCopyRequested: (() -> Unit)?,
         onPasteRequested: (() -> Unit)?,
         onCutRequested: (() -> Unit)?,
-        onSelectAllRequested: (() -> Unit)?
+        onSelectAllRequested: (() -> Unit)?,
+        onPasteResult: ((String) -> Unit)?
     ) {
         textActionModeCallback.rect = rect
         textActionModeCallback.onCopyRequested = onCopyRequested

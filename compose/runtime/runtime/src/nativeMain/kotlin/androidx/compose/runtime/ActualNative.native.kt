@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +23,7 @@ import androidx.compose.runtime.snapshots.SnapshotContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.identityHashCode
+import kotlin.native.runtime.NativeRuntimeApi
 import kotlin.system.getTimeNanos
 import kotlin.time.ExperimentalTime
 import kotlinx.atomicfu.atomic
@@ -69,8 +72,10 @@ internal actual class SnapshotContextElementImpl actual constructor(
         error("provide SnapshotContextElementImpl when coroutines lib has necessary APIs")
     }
 
-    override val key: CoroutineContext.Key<*>
+    override actual val key: CoroutineContext.Key<*>
         get() = SnapshotContextElement
+
+    actual companion object Key : CoroutineContext.Key<SnapshotContextElement>
 }
 
 internal actual fun logError(message: String, e: Throwable) {
@@ -81,3 +86,7 @@ internal actual fun logError(message: String, e: Throwable) {
 internal actual fun currentThreadId(): Long = threadId
 
 internal actual fun currentThreadName(): String = "thread@$threadId"
+
+actual fun handleComposeStateChange(state: Int) {
+//    kotlin.native.internal.GC.onAppStateChange(state)
+}

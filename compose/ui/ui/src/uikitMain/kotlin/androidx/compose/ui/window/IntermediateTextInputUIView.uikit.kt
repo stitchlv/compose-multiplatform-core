@@ -322,12 +322,15 @@ internal class IntermediateTextInputUIView(
         return toPosition.position - from.position
     }
 
+
+    @kotlinx.cinterop.ObjCSignatureOverride
     override fun positionWithinRange(
         range: UITextRange,
         atCharacterOffset: NSInteger
     ): UITextPosition? =
         TODO("positionWithinRange range: $range, atCharacterOffset: $atCharacterOffset")
 
+    @kotlinx.cinterop.ObjCSignatureOverride
     override fun positionWithinRange(
         range: UITextRange,
         farthestInDirection: UITextLayoutDirection

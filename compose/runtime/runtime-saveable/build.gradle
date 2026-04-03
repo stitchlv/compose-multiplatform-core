@@ -76,6 +76,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
 
         linuxX64()
         linuxArm64()
+        ohosArm64()
     }
 
     kotlin {

@@ -418,7 +418,8 @@ private class TextToolbarWrapper(private val delegate: TextToolbar) : TextToolba
         onCopyRequested: (() -> Unit)?,
         onPasteRequested: (() -> Unit)?,
         onCutRequested: (() -> Unit)?,
-        onSelectAllRequested: (() -> Unit)?
+        onSelectAllRequested: (() -> Unit)?,
+        onPasteResult: ((String) -> Unit)?
     ) {
         _shown = true
         _mostRecentRect = rect

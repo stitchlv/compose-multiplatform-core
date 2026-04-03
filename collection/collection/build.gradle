@@ -38,6 +38,7 @@ androidXComposeMultiplatform {
 
     linuxX64()
     linuxArm64()
+    ohosArm64()
 }
 
 kotlin {
@@ -90,6 +91,7 @@ kotlin {
         jsWasmMain.dependsOn(jsNativeMain)
         jsMain.dependsOn(jsWasmMain)
         jvmMain.dependsOn(jbMain)
+        ohosArm64Main.dependsOn(jsNativeMain)
 
         wasmJsMain.dependsOn(jsWasmMain)
 

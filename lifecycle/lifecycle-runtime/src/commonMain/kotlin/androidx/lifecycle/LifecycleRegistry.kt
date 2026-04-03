@@ -15,6 +15,7 @@
  */
 package androidx.lifecycle
 
+import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
 import kotlin.jvm.JvmStatic
 
@@ -53,6 +54,12 @@ constructor(provider: LifecycleOwner) : Lifecycle {
      * @return The number of observers.
      */
     public open val observerCount: Int
+
+    @MainThread
+    public override fun addObserver(observer: LifecycleObserver)
+
+    @MainThread
+    public override fun removeObserver(observer: LifecycleObserver)
 
     public companion object {
         /**

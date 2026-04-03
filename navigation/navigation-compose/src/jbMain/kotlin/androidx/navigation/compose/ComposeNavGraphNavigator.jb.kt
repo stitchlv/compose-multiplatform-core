@@ -29,9 +29,6 @@ import kotlin.jvm.JvmSuppressWildcards
 internal actual class ComposeNavGraphNavigator actual constructor(
     navigatorProvider: NavigatorProvider
 ) : NavGraphNavigator(navigatorProvider) {
-    override fun createDestination(): NavGraph {
-        return ComposeNavGraph(this)
-    }
 
     internal actual class ComposeNavGraph actual constructor(
         navGraphNavigator: Navigator<out NavGraph>

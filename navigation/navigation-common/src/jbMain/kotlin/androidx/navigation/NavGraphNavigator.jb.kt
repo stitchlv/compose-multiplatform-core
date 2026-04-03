@@ -32,7 +32,7 @@ public actual open class NavGraphNavigator actual constructor(
      * Creates a new [NavGraph] associated with this navigator.
      * @return The created [NavGraph].
      */
-    override fun createDestination(): NavGraph {
+    override fun createDestination(): NavGraph? {
         return NavGraph(this)
     }
 

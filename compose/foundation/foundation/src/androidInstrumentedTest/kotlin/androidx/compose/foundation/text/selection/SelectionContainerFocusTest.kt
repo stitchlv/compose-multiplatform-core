@@ -280,7 +280,8 @@ internal fun FakeTextToolbar(
             onCopyRequested: (() -> Unit)?,
             onPasteRequested: (() -> Unit)?,
             onCutRequested: (() -> Unit)?,
-            onSelectAllRequested: (() -> Unit)?
+            onSelectAllRequested: (() -> Unit)?,
+            onPasteResult: ((String) -> Unit)?
         ) {
             onShowMenu(
                 rect,

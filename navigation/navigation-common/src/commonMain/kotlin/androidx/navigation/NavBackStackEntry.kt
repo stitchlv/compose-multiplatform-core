@@ -21,8 +21,10 @@ import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 
@@ -42,6 +44,13 @@ public expect class NavBackStackEntry :
     @Suppress("ConvertSecondaryConstructorToPrimary")
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     constructor(entry: NavBackStackEntry, arguments: Bundle? = entry.arguments)
+
+
+    public override val lifecycle: Lifecycle
+    public override val viewModelStore: ViewModelStore
+    public override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+    public override val defaultViewModelCreationExtras: CreationExtras
+    public override val savedStateRegistry: SavedStateRegistry
 
     /**
      * The destination associated with this entry

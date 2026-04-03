@@ -1,6 +1,8 @@
 /*
  * Copyright 2020 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -798,6 +800,13 @@ internal class TextFieldSelectionManager(
             }
         } else null
 
+        val pasteResult: ((String) -> Unit)? = if (editable && clipboardManager?.hasText() == true) {
+            {
+                paste(AnnotatedString(it))
+                hideSelectionToolbar()
+            }
+        } else null
+
         val selectAll: (() -> Unit)? = if (value.selection.length != value.text.length) {
             {
                 selectAll()
@@ -809,7 +818,8 @@ internal class TextFieldSelectionManager(
             onCopyRequested = copy,
             onPasteRequested = paste,
             onCutRequested = cut,
-            onSelectAllRequested = selectAll
+            onSelectAllRequested = selectAll,
+            onPasteResult = pasteResult
         )
     }
 

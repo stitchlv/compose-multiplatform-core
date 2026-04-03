@@ -34,6 +34,7 @@ enum class ComposePlatforms(vararg val alternativeNames: String) {
     LinuxX64("Linux"),
     LinuxArm64("Linux"),
     MingwX64("Mingw"),
+    OhosArm64("Ohos")
     ;
 
     private val namesLowerCased by lazy {
@@ -94,6 +95,10 @@ enum class ComposePlatforms(vararg val alternativeNames: String) {
             ComposePlatforms.LinuxArm64
         )
 
+        val OHOS = EnumSet.of(
+            ComposePlatforms.OhosArm64
+        )
+
         val MACOS = EnumSet.of(
             ComposePlatforms.MacosX64,
             ComposePlatforms.MacosArm64
@@ -104,7 +109,7 @@ enum class ComposePlatforms(vararg val alternativeNames: String) {
             ComposePlatforms.WasmJs
         )
 
-        val SKIKO_SUPPORT = EnumSet.of(KotlinMultiplatform) + JVM_BASED + UI_KIT + MACOS + WEB
+        val SKIKO_SUPPORT = EnumSet.of(KotlinMultiplatform) + JVM_BASED + UI_KIT + MACOS + WEB + OHOS
 
         val ALL = EnumSet.allOf(ComposePlatforms::class.java) - IOS
         val ALL_AOSP = EnumSet.allOf(ComposePlatforms::class.java) - UI_KIT

@@ -26,6 +26,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 
+fun <R> calculateDuration(tag: String, block: () -> R): R {
+    val startTime = System.currentTimeMillis()
+    val res = block()
+    val endTime = System.currentTimeMillis()
+    println("[ImagePerformance-$tag] duration: ${endTime - startTime}")
+    return res
+}
+
 /**
  * Load an ImageBitmap from an image resource.
  *
@@ -36,7 +44,9 @@ import androidx.compose.ui.platform.LocalContext
  * @return Loaded image file represented as an [ImageBitmap]
  */
 fun ImageBitmap.Companion.imageResource(res: Resources, @DrawableRes id: Int): ImageBitmap {
-    return (res.getDrawable(id, null) as BitmapDrawable).bitmap.asImageBitmap()
+    return calculateDuration("GetImageBitmap") {
+        (res.getDrawable(id, null) as BitmapDrawable).bitmap.asImageBitmap()
+    }
 }
 
 /**

@@ -1208,7 +1208,7 @@ public actual open class NavController {
 //        }
     }
 
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+//    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public actual open fun setLifecycleOwner(owner: LifecycleOwner) {
         if (owner == lifecycleOwner) {
             return
@@ -1218,7 +1218,7 @@ public actual open class NavController {
         owner.lifecycle.addObserver(lifecycleObserver)
     }
 
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+//    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public actual open fun setViewModelStore(viewModelStore: ViewModelStore) {
         if (viewModel == NavControllerViewModel.getInstance(viewModelStore)) {
             return

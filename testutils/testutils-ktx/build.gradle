@@ -49,3 +49,13 @@ androidXMultiplatform {
 androidx {
     type = LibraryType.INTERNAL_TEST_LIBRARY
 }
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//        println("============>  name: ${details.requested.name}, group: ${details.requested.group}, version: ${details.requested.version}")
+        if (details.requested.name == "kotlinx-coroutines-test" &&
+                details.requested.group == "org.jetbrains.kotlinx") {
+            details.useVersion "1.8.1"
+        }
+    }
+}

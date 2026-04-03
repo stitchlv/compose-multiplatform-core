@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import org.jetbrains.skia.FontFeature
 import org.jetbrains.skia.Paint
+import org.jetbrains.skia.impl.use
 import org.jetbrains.skia.paragraph.*
 import org.jetbrains.skia.paragraph.ParagraphStyle
 
@@ -325,53 +326,55 @@ internal class ParagraphBuilder(
             else -> throw IllegalStateException("Unsupported font loader $platformFontLoader")
         }
 
-        val pb = SkParagraphBuilder(ps, fontCollection)
+        return SkParagraphBuilder(ps, fontCollection).use { pb ->
+            var addText = true
 
-        var addText = true
-
-        for (op in ops) {
-            if (addText && pos < op.position) {
-                pb.addText(text.subSequence(pos, op.position).toString())
-            }
-
-            when (op) {
-                is Op.StyleAdd -> {
-                    // FontLoader may have changed, so ensure that Font resolution is still valid
-                    fontFamilyResolver.resolve(
-                        op.style.fontFamily,
-                        op.style.fontWeight ?: FontWeight.Normal,
-                        op.style.fontStyle ?: FontStyle.Normal,
-                        op.style.fontSynthesis ?: FontSynthesis.All
-                    )
-                    pb.pushStyle(makeSkTextStyle(op.style))
+            for (op in ops) {
+                if (addText && pos < op.position) {
+                    pb.addText(text.subSequence(pos, op.position).toString())
                 }
-                is Op.PutPlaceholder -> {
-                    val placeholderStyle =
-                        PlaceholderStyle(
-                            op.width,
-                            op.height,
-                            op.cut.placeholder.placeholderVerticalAlign
-                                .toSkPlaceholderAlignment(),
-                            // TODO: figure out how exactly we have to work with BaselineMode & offset
-                            BaselineMode.ALPHABETIC,
-                            0f
+
+                when (op) {
+                    is Op.StyleAdd -> {
+                        // FontLoader may have changed, so ensure that Font resolution is still valid
+                        fontFamilyResolver.resolve(
+                            op.style.fontFamily,
+                            op.style.fontWeight ?: FontWeight.Normal,
+                            op.style.fontStyle ?: FontStyle.Normal,
+                            op.style.fontSynthesis ?: FontSynthesis.All
                         )
-                    pb.addPlaceholder(placeholderStyle)
-                    addText = false
+                        pb.pushStyle(makeSkTextStyle(op.style))
+                    }
+                    is Op.PutPlaceholder -> {
+                        val placeholderStyle =
+                            PlaceholderStyle(
+                                op.width,
+                                op.height,
+                                op.cut.placeholder.placeholderVerticalAlign
+                                    .toSkPlaceholderAlignment(),
+                                // TODO: figure out how exactly we have to work with BaselineMode & offset
+                                BaselineMode.ALPHABETIC,
+                                0f
+                            )
+                        pb.addPlaceholder(placeholderStyle)
+                        addText = false
+                    }
+                    is Op.EndPlaceholder -> {
+                        addText = true
+                    }
                 }
-                is Op.EndPlaceholder -> {
-                    addText = true
-                }
+
+                pos = op.position
             }
 
-            pos = op.position
-        }
+            if (addText && pos < text.length) {
+                pb.addText(text.subSequence(pos, text.length).toString())
+            }
 
-        if (addText && pos < text.length) {
-            pb.addText(text.subSequence(pos, text.length).toString())
+            return pb.build()
+        }.also {
+            ps.close()
         }
-
-        return pb.build()
     }
 
     private sealed class Op {
@@ -541,6 +544,10 @@ internal class ParagraphBuilder(
     }
 
     private fun makeSkTextStyle(style: ComputedStyle): SkTextStyle {
+        if (!isNeedTextStyleCache()) {
+            println("makeSkTextStyle: no cache, maybe wrong")
+            return style.toSkTextStyle(fontFamilyResolver)
+        }
         return skTextStylesCache.get(style) {
             it.toSkTextStyle(fontFamilyResolver)
         }
@@ -724,3 +731,5 @@ internal fun TextBox.cursorHorizontalPosition(opposite: Boolean = false): Float 
         SkDirection.RTL -> if (opposite) rect.right else rect.left
     }
 }
+
+internal expect fun isNeedTextStyleCache(): Boolean

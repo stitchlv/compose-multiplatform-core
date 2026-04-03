@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,6 +52,10 @@ internal expect class AtomicReference<V>(value: V) {
  */
 @Stable
 internal class InternalMutatorMutex {
+    companion object {
+        private val MUTATOR_EXCEPTION = CancellationException("Current mutation had a higher priority")
+    }
+
     private class Mutator(val priority: MutatePriority, val job: Job) {
         fun canInterrupt(other: Mutator) = priority >= other.priority
 
@@ -67,7 +73,7 @@ internal class InternalMutatorMutex {
                     oldMutator?.cancel()
                     break
                 }
-            } else throw CancellationException("Current mutation had a higher priority")
+            } else throw MUTATOR_EXCEPTION
         }
     }
 

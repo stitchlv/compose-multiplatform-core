@@ -230,6 +230,13 @@ internal class RootNodeOwner(
         return (last as? BackwardsCompatNode)?.element is InteropViewCatchPointerModifier
     }
 
+    fun getHitTestInteropModifier(position: Offset): InteropViewCatchPointerModifier? {
+        val result = HitTestResult()
+        owner.root.hitTest(position, result, true)
+        val last = result.lastOrNull()
+        return (last as? BackwardsCompatNode)?.element as? InteropViewCatchPointerModifier
+    }
+
     private fun isInBounds(localPosition: Offset): Boolean =
         size?.toIntRect()?.toRect()?.contains(localPosition) ?: true
 

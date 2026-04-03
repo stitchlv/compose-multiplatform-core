@@ -43,6 +43,7 @@ androidXMultiplatform {
     ios()
     js()
     wasm()
+    ohosArm64()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
@@ -60,6 +61,7 @@ kotlin {
     tvosArm64()
     tvosX64()
     tvosSimulatorArm64()
+    ohosArm64()
 
     sourceSets {
         commonMain {

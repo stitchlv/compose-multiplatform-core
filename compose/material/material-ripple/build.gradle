@@ -63,6 +63,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         darwin()
         js()
         wasm()
+        ohosArm64()
     }
 
     kotlin {
@@ -99,6 +100,8 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
                 implementation(libs.junit)
                 implementation(libs.truth)
             }
+
+            ohosArm64Main.dependsOn(nativeMain)
 
             jsWasmMain {
                 dependsOn(commonMain)

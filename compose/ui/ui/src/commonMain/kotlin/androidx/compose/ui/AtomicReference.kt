@@ -1,6 +1,8 @@
 /*
  * Copyright 2023 The Android Open Source Project
  *
+ * Copyright (c) 2026 ByteDance Ltd. and/or its affiliates
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +21,7 @@ package androidx.compose.ui
 // This should be kept internal by marking all actuals as internal. We can't mark the expect as
 // internal since the typealias target on JVM is public, so the compiler complains about mismatched
 // visibility.
-internal expect class AtomicReference<V>(value: V) {
+internal expect class AtomicReference<V> constructor(value: V) {
     fun get(): V
     fun set(value: V)
     fun getAndSet(value: V): V

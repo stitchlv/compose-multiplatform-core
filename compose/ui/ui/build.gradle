@@ -144,6 +144,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         darwin()
         js()
         wasm()
+        ohosArm64()
 
         configureDarwinFlags()
     }
@@ -159,6 +160,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
                 implementation(libs.kotlinStdlibCommon)
                 implementation(libs.kotlinCoroutinesCore)
                 implementation(libs.atomicFu)
+                implementation(libs.datetime)
 
                 // when updating the runtime version please also update the runtime-saveable version
                 implementation(project(":compose:runtime:runtime"))
@@ -198,8 +200,9 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
             jvmMain.dependencies {
                 implementation(libs.kotlinStdlib)
             }
+            jbMain.dependsOn(commonMain)
             skikoMain {
-                dependsOn(commonMain)
+                dependsOn(jbMain)
                 dependencies {
                     api(project(":compose:ui:ui-graphics"))
                     api(project(":compose:ui:ui-text"))
@@ -224,6 +227,16 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
             jsWasmMain.dependsOn(jsNativeMain)
             jsWasmMain.dependsOn(notMobileMain)
             macosMain.dependsOn(notMobileMain)
+
+
+            ohosArm64Main {
+                dependsOn(jbMain)
+                dependencies {
+                    api(project(":compose:ui:ui-graphics"))
+                    api(project(":compose:ui:ui-text"))
+                    api project(":compose:ui:ui-ohos")
+                }
+            }
 
             jsMain {
                 kotlin.srcDir("src/webCommonW3C/kotlin")

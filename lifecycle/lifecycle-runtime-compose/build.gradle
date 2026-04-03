@@ -42,6 +42,7 @@ androidXComposeMultiplatform {
     darwin()
     js()
     wasm()
+    ohosArm64()
 
     linuxX64()
     linuxArm64()
@@ -56,6 +57,7 @@ kotlin {
     tvosX64()
     tvosSimulatorArm64()
     mingwX64()
+    ohosArm64()
 
     sourceSets {
         commonMain {

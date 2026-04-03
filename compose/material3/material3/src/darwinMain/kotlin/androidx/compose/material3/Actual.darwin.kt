@@ -26,4 +26,4 @@ actual typealias CalendarLocale = NSLocale
 
 @Composable
 @ReadOnlyComposable
-internal actual fun defaultLocale(): CalendarLocale = NSLocale.currentLocale()
+actual fun defaultLocale(): CalendarLocale = NSLocale.currentLocale()

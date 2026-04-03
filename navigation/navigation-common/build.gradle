@@ -49,6 +49,7 @@ androidXMultiplatform {
     ios()
     js()
     wasm()
+    ohosArm64()
 
     defaultPlatform(PlatformIdentifier.ANDROID)
 }
@@ -66,6 +67,7 @@ kotlin {
     tvosArm64()
     tvosX64()
     tvosSimulatorArm64()
+    ohosArm64()
 
     sourceSets {
         commonMain {
@@ -164,6 +166,8 @@ kotlin {
                         dependsOn(darwinMain)
                     } else if (konanTargetFamily == Family.LINUX) {
                         dependsOn(linuxMain)
+                    } else if (konanTargetFamily == Family.OHOS) {
+                        dependsOn(nativeMain)
                     } else {
                         throw new GradleException("unknown native target ${target}")
                     }

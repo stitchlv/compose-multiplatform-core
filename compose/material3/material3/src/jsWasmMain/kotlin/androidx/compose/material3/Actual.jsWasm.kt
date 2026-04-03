@@ -31,4 +31,4 @@ actual typealias CalendarLocale = Locale
  */
 @Composable
 @ReadOnlyComposable
-internal actual fun defaultLocale(): CalendarLocale = Locale.current
+actual fun defaultLocale(): CalendarLocale = Locale.current

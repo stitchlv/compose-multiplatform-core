@@ -51,6 +51,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         darwin()
         js()
         wasm()
+        ohosArm64()
     }
 
     kotlin {
@@ -61,6 +62,7 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
         sourceSets {
             commonMain.dependencies {
                 implementation(libs.kotlinStdlibCommon)
+
             }
 
             jvmMain.dependencies {

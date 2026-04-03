@@ -26,6 +26,10 @@ ext.repos = new Properties()
 ext.repos.checkoutRoot = checkoutRoot.absolutePath
 ext.repos.prebuiltsRoot = new File(checkoutRoot, "prebuilts").absolutePath
 
+apply from: "${supportRootFolder.absolutePath}/build_properties.gradle"
+def buildProperties = extensions.findByName("build_properties")
+ext.repos.customMaven = buildProperties.get("custom_maven_url") ?: "https://artifact.bytedance.com/repository/releases"
+
 /**
  * Adds maven repositories to the given repository handler.
  */
@@ -66,6 +70,12 @@ def addMavenRepositories(RepositoryHandler handler) {
         handler.gradlePluginPortal()
         handler.maven {
                url("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        }
+        handler.maven {
+                url(repos.customMaven)
+        }
+        handler.maven {
+                url("https://artifact.bytedance.com/repository/releases")
         }
         handler.maven {
                url("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")

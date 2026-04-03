@@ -21,11 +21,15 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.interop.UIKitInteropContext
 import androidx.compose.ui.interop.UIKitInteropTransaction
+import androidx.compose.ui.util.FrameData
+import androidx.compose.ui.util.FrameObserver
+import androidx.compose.ui.util.KPerfComposeConfig
 import kotlin.math.floor
 import kotlin.math.roundToLong
 import kotlinx.cinterop.*
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skiko.SkikoRenderDelegate
+import org.jetbrains.skiko.currentNanoTime
 import platform.CoreGraphics.*
 import platform.Foundation.*
 import platform.Metal.MTLCreateSystemDefaultDevice
@@ -59,11 +63,14 @@ internal class RenderingUIView(
     private val metalLayer: CAMetalLayer get() = layer as CAMetalLayer
     private var _width: CGFloat = 0.0
     private var _height: CGFloat = 0.0
+    private val frameDelegate = IOSFrameDelegate()
     internal val redrawer: MetalRedrawer = MetalRedrawer(
         metalLayer,
         callbacks = object : MetalRedrawerCallbacks {
             override fun render(canvas: Canvas, targetTimestamp: NSTimeInterval) {
+                frameDelegate.onFrameStart(currentNanoTime())
                 renderDelegate.onRender(canvas, _width.toInt(), _height.toInt(), targetTimestamp.toNanoSeconds())
+                frameDelegate.onFrameEnd(currentNanoTime())
             }
 
             override fun retrieveInteropTransaction(): UIKitInteropTransaction =
@@ -88,7 +95,7 @@ internal class RenderingUIView(
 
             it.pixelFormat = MTLPixelFormatBGRA8Unorm
             it.backgroundColor = UIColor.clearColor.CGColor
-            it.framebufferOnly = false
+            it.framebufferOnly = true
         }
     }
 
@@ -152,4 +159,39 @@ private fun NSTimeInterval.toNanoSeconds(): Long {
     val secondsToNanos = 1_000_000_000L
     val nanos = integral.roundToLong() * secondsToNanos + (fractional * 1e9).roundToLong()
     return nanos
+}
+
+class IOSFrameDelegate {
+    private var lastTime: Long = -1L
+    private var frameEndTime: Long = -1L
+
+    companion object {
+        private const val TAG = "IOSFrameDelegate"
+    }
+
+
+    fun onFrameStart(currentTime: Long) {
+        if (!KPerfComposeConfig.enableFrameMonitor) {
+            return
+        }
+        // frameEndTime 没有回调，则把当前帧作为帧的结束，这种情况只有丢帧的时候会出现
+        if (frameEndTime < lastTime) {
+            frameEndTime = currentTime
+//            println(TAG, "lost frame cost: ${currentTime - lastTime}")
+        }
+        FrameObserver.notify(FrameData("", lastTime, frameEndTime, currentTime))
+        lastTime = currentTime
+    }
+
+    fun onFrameEnd(currentTime: Long) {
+        frameEndTime = currentTime
+        FrameObserver.notifyFrameEnd(
+            FrameData(
+                "",
+                frameStartTimeNs = lastTime,
+                frameEndTimeNs = currentTime,
+                currentTime
+            )
+        )
+    }
 }

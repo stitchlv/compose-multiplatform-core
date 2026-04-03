@@ -29,4 +29,5 @@ androidXComposeMultiplatform {
     js()
     darwin()
     wasm()
+    ohosArm64()
 }

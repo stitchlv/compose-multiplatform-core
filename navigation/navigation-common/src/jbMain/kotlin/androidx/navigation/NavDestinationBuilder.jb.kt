@@ -59,7 +59,7 @@ public actual constructor(
      * Build the NavDestination by calling [Navigator.createDestination].
      */
     public actual open fun build(): D {
-        return navigator.createDestination().also { destination ->
+        return navigator.createDestination()!!.also { destination ->
             destination.label = label
             arguments.forEach { (name, argument) ->
                 destination.addArgument(name, argument)
