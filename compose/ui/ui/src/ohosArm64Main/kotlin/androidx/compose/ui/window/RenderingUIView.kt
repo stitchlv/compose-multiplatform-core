@@ -70,6 +70,7 @@ class RenderingUIView(
     renderNode: AbsRenderNode,
     importApi: FrameImportApi,
     param: NApiValue,
+    rootContent: NApiValue?,
     interopBottomNodeContent: NApiValue,
     interopTopNodeContent: NApiValue,
     textToolbar: NApiValue?,
@@ -81,7 +82,8 @@ class RenderingUIView(
     isPreCompose: Boolean,
     private val preComposeProbe: PreComposeProbe?,
     extraValuesGetter: () -> Array<ProvidedValue<*>>,
-    val frameNodeId: Int?
+    val frameNodeId: Int?,
+    rootFrameNode: NApiValue?
 ) : FrameRenderView(
     renderNode, constraint, importApi, param,
     contentData.touchInterceptor ?: EmptyTouchEventInterceptor
@@ -147,11 +149,13 @@ class RenderingUIView(
     private var onIdleEventConsumed = false
 
     private val mediator = ComposeSceneMediator(
-        id, coroutineContext, contentData, param, interopBottomNodeContent, interopTopNodeContent, textToolbar, this::invalidate,
-        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter
+        id, coroutineContext, contentData, param, rootContent, interopBottomNodeContent, interopTopNodeContent, textToolbar, this::invalidate,
+        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter, frameNodeId, rootFrameNode
     )
 
     private var hasSetTextToolbar: Boolean = setTextToolBarFinalizer(this, textToolbar)
+
+    private var currentRootFrameNode: NApiValue? = rootFrameNode
 
     fun getOhosView(): OhosViewWrapper {
         return object : OhosViewWrapper {
@@ -304,7 +308,12 @@ class RenderingUIView(
     }
 
     override fun updateFrameNodeId(frameNodeId: Int) {
+        mediator.updateRootFrameNode(currentRootFrameNode, frameNodeId)
+    }
 
+    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?) {
+        currentRootFrameNode = rootFrameNode
+        mediator.updateRootFrameNode(rootFrameNode, frameNodeId)
     }
 
 
