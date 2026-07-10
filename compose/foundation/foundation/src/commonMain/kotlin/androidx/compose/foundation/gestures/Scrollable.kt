@@ -285,6 +285,9 @@ private class ScrollableNode(
         reverseDirection = reverseDirection,
         flingBehavior = flingBehavior ?: defaultFlingBehavior,
         nestedScrollDispatcher = nestedScrollDispatcher,
+        onFlingStateChanged = { enable ->
+            setUiDvsyncSwitchForFling(enable)
+        },
     )
 
     val nestedScrollConnection =
@@ -631,6 +634,8 @@ internal interface ScrollConfig {
 
 internal expect fun CompositionLocalConsumerModifierNode.platformScrollConfig(): ScrollConfig
 
+internal expect fun CompositionLocalConsumerModifierNode.setUiDvsyncSwitchForFling(enable: Boolean)
+
 private val CanDragCalculation: (PointerInputChange) -> Boolean =
     { down -> down.type != PointerType.Mouse }
 
@@ -648,6 +653,7 @@ internal class ScrollingLogic(
     private var reverseDirection: Boolean,
     private var flingBehavior: FlingBehavior,
     private var nestedScrollDispatcher: NestedScrollDispatcher,
+    private val onFlingStateChanged: (Boolean) -> Unit = {},
 ) {
     private val isNestedFlinging = mutableStateOf(false)
     fun Float.toOffset(): Offset = when {
@@ -772,20 +778,25 @@ internal class ScrollingLogic(
 
     suspend fun ScrollScope.doFlingAnimation(available: Velocity): Velocity {
         var result: Velocity = available
-        val outerScopeScroll: (Offset) -> Offset = { delta ->
-            dispatchScroll(delta.reverseIfNeeded(), Fling).reverseIfNeeded()
-        }
-        val scope = object : ScrollScope {
-            override fun scrollBy(pixels: Float): Float {
-                return outerScopeScroll.invoke(pixels.toOffset()).toFloat()
+        onFlingStateChanged(true)
+        try {
+            val outerScopeScroll: (Offset) -> Offset = { delta ->
+                dispatchScroll(delta.reverseIfNeeded(), Fling).reverseIfNeeded()
             }
-        }
-        with(scope) {
-            with(flingBehavior) {
-                result = result.update(
-                    performFling(available.toFloat().reverseIfNeeded()).reverseIfNeeded()
-                )
+            val scope = object : ScrollScope {
+                override fun scrollBy(pixels: Float): Float {
+                    return outerScopeScroll.invoke(pixels.toOffset()).toFloat()
+                }
             }
+            with(scope) {
+                with(flingBehavior) {
+                    result = result.update(
+                        performFling(available.toFloat().reverseIfNeeded()).reverseIfNeeded()
+                    )
+                }
+            }
+        } finally {
+            onFlingStateChanged(false)
         }
         return result
     }

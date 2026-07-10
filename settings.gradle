@@ -272,4 +272,4 @@ includeProject(":internal-testutils-mockito", "testutils/testutils-mockito")
 // Workaround for b/203825166
 includeBuild("placeholder")
 
-includeProject(":mpp")
+//includeProject(":mpp") // temporarily disabled: build-helpers dependency unavailable (JetBrains space 503)

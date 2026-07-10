@@ -21,6 +21,7 @@ import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.foundation.gestures.cupertino.CupertinoFlingBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 
 internal actual fun platformDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
     CupertinoFlingBehavior(CupertinoScrollDecayAnimationSpec().generateDecayAnimationSpec())
@@ -32,3 +33,5 @@ internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior =
     remember {
         platformDefaultFlingBehavior()
     }
+
+internal actual fun CompositionLocalConsumerModifierNode.setUiDvsyncSwitchForFling(enable: Boolean) = Unit
