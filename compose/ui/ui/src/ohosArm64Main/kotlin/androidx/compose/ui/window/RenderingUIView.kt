@@ -28,7 +28,6 @@ import androidx.compose.ui.util.KPerfComposeConfig
 import androidx.compose.ui.util.MetaFrameData
 import androidx.compose.ui.util.PreComposeProbe
 import androidx.compose.ui.utils.currentNanoTime
-import androidx.compose.ui.util.trace
 import com.bytedance.kmp.harko.HarkoContext
 import com.bytedance.kmp.harko.HarkoScope
 import com.bytedance.kmp.harko.OHLogger
@@ -213,7 +212,6 @@ class RenderingUIView(
         } else {
             drawStartTimeNanos
         }
-        val frameTimeSource = if (lastOnFrameTimeNanos > 0L) "onFrame" else "currentNanoTime"
         if (withOffscreenRender) {
             canvas.saveLayer(0F, 0F, width.toFloat(), height.toFloat(), null)
         }
@@ -221,9 +219,7 @@ class RenderingUIView(
             canvas.clear((if (HarkoContext.isDarkThemeFlow.value) 0xFF000000 else 0xFFFFFFFF).toInt())
         }
         frameDelegate.onFrameStart(drawStartTimeNanos, id.toString())
-        trace("RenderingUIView:onRender frameTimeSource=$frameTimeSource") {
-            mediator.onRender(canvas, width, height, renderFrameTimeNanos)
-        }
+        mediator.onRender(canvas, width, height, renderFrameTimeNanos)
         frameDelegate.onFrameEnd(currentNanoTime(), id.toString(), preComposeProbe?.isActualLaunched())
         if (withOffscreenRender) {
             canvas.restore()
