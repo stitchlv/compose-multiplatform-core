@@ -25,7 +25,9 @@ import androidx.compose.foundation.gestures.DefaultScrollMotionDurationScale
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableDefaultFlingBehavior
 import androidx.compose.ui.MotionDurationScale
+import androidx.compose.ui.util.trace
 import kotlin.math.abs
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 
@@ -55,13 +57,30 @@ internal class CupertinoFlingBehavior(
                     initialVelocity = initialVelocity,
                 ).animateDecay(flingDecay) {
                     val delta = value - lastValue
+                    var scrollByDurationNanos = 0L
+                    var scrollByCancelled = false
+                    val scrollByStart = TimeSource.Monotonic.markNow()
                     val consumed = try {
-                        scrollBy(delta)
+                        trace("CupertinoFling:scrollBy") {
+                            scrollBy(delta)
+                        }
                     } catch (exception: CancellationException) {
+                        scrollByCancelled = true
                         0.0f
+                    } finally {
+                        scrollByDurationNanos = scrollByStart.elapsedNow().inWholeNanoseconds
                     }
                     lastValue = value
                     velocityLeft = this.velocity
+                    trace(
+                        "CupertinoFling:frame " +
+                            "frameTimeNs=$lastFrameTimeNanos " +
+                            "delta=$delta " +
+                            "consumed=$consumed " +
+                            "velocity=$velocityLeft " +
+                            "scrollByNs=$scrollByDurationNanos " +
+                            "cancelled=$scrollByCancelled"
+                    ) {}
                     // avoid rounding errors and stop if anything is unconsumed
                     if (abs(delta - consumed) > 0.5f) this.cancelAnimation()
                 }
