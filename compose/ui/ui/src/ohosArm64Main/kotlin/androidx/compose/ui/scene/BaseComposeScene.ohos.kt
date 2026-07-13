@@ -158,12 +158,20 @@ internal abstract class BaseComposeScene(
 
             // Flush composition effects (e.g. LaunchedEffect, coroutines launched in
             // rememberCoroutineScope()) before everything else
-            recomposer.performScheduledEffects()
+            trace("BaseComposeScene:performScheduledEffects") {
+                recomposer.performScheduledEffects()
+            }
 
-            recomposer.performScheduledRecomposerTasks()
-            frameClock.sendFrame(nanoTime) // withFrameMillis/Nanos and recomposition
+            trace("BaseComposeScene:performScheduledRecomposerTasks") {
+                recomposer.performScheduledRecomposerTasks()
+            }
+            trace("BaseComposeScene:frameClock.sendFrame") {
+                frameClock.sendFrame(nanoTime) // withFrameMillis/Nanos and recomposition
+            }
 
-            doLayout()  // Layout
+            trace("BaseComposeScene:doLayout") {
+                doLayout()  // Layout
+            }
 
             // Schedule synthetic events to be sent after `render` completes
             if (inputHandler.needUpdatePointerPosition) {
@@ -171,8 +179,12 @@ internal abstract class BaseComposeScene(
             }
 
             // Draw
-            snapshotInvalidationTracker.onDraw()
-            draw(canvas)
+            trace("BaseComposeScene:onDrawSnapshot") {
+                snapshotInvalidationTracker.onDraw()
+            }
+            trace("BaseComposeScene:draw") {
+                draw(canvas)
+            }
         }
 
     override fun sendPointerEvent(

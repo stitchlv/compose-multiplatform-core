@@ -28,6 +28,7 @@ import androidx.compose.ui.util.KPerfComposeConfig
 import androidx.compose.ui.util.MetaFrameData
 import androidx.compose.ui.util.PreComposeProbe
 import androidx.compose.ui.utils.currentNanoTime
+import androidx.compose.ui.util.trace
 import com.bytedance.kmp.harko.HarkoContext
 import com.bytedance.kmp.harko.HarkoScope
 import com.bytedance.kmp.harko.OHLogger
@@ -88,6 +89,8 @@ class RenderingUIView(
     renderNode, constraint, importApi, param,
     contentData.touchInterceptor ?: EmptyTouchEventInterceptor
 ) {
+    private var lastOnFrameTimeNanos: Long = 0L
+
     companion object {
         internal fun getMediator(id: Long): ComposeSceneMediator? {
             return (getRenderView(id) as? RenderingUIView)?.mediator
@@ -204,14 +207,23 @@ class RenderingUIView(
 
     override fun onDraw(canvas: Canvas) {
         if (isReleased) return
+        val drawStartTimeNanos = currentNanoTime()
+        val renderFrameTimeNanos = if (lastOnFrameTimeNanos > 0L) {
+            lastOnFrameTimeNanos
+        } else {
+            drawStartTimeNanos
+        }
+        val frameTimeSource = if (lastOnFrameTimeNanos > 0L) "onFrame" else "currentNanoTime"
         if (withOffscreenRender) {
             canvas.saveLayer(0F, 0F, width.toFloat(), height.toFloat(), null)
         }
         if (needBackgroundColor) {
             canvas.clear((if (HarkoContext.isDarkThemeFlow.value) 0xFF000000 else 0xFFFFFFFF).toInt())
         }
-        frameDelegate.onFrameStart(currentNanoTime(), id.toString())
-        mediator.onRender(canvas, width, height, currentNanoTime())
+        frameDelegate.onFrameStart(drawStartTimeNanos, id.toString())
+        trace("RenderingUIView:onRender frameTimeSource=$frameTimeSource") {
+            mediator.onRender(canvas, width, height, renderFrameTimeNanos)
+        }
         frameDelegate.onFrameEnd(currentNanoTime(), id.toString(), preComposeProbe?.isActualLaunched())
         if (withOffscreenRender) {
             canvas.restore()
@@ -265,6 +277,7 @@ class RenderingUIView(
 
     override fun onFrame(frameTime: Long) {
         if (isReleased) return
+        lastOnFrameTimeNanos = frameTime
         onIdleEventConsumed = false
         super.onFrame(frameTime)
     }
