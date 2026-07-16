@@ -61,6 +61,7 @@ import kotlinx.cinterop.staticCFunction
 import kotlinx.coroutines.DisposableHandle
 import kotlin.native.ref.WeakReference
 import kotlinx.coroutines.SupervisorJob
+import platform.ohos.napi.napi_value
 
 private const val TAG = "RenderingUIView"
 
@@ -83,7 +84,8 @@ class RenderingUIView(
     private val preComposeProbe: PreComposeProbe?,
     extraValuesGetter: () -> Array<ProvidedValue<*>>,
     val frameNodeId: Int?,
-    rootFrameNode: NApiValue?
+    rootFrameNode: NApiValue?,
+    uiContext: napi_value?
 ) : FrameRenderView(
     renderNode, constraint, importApi, param,
     contentData.touchInterceptor ?: EmptyTouchEventInterceptor
@@ -152,12 +154,13 @@ class RenderingUIView(
 
     private val mediator = ComposeSceneMediator(
         id, coroutineContext, contentData, param, rootContent, interopBottomNodeContent, interopTopNodeContent, textToolbar, this::invalidate,
-        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter, frameNodeId, rootFrameNode
+        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter, frameNodeId, rootFrameNode, uiContext
     )
 
     private var hasSetTextToolbar: Boolean = setTextToolBarFinalizer(this, textToolbar)
 
     private var currentRootFrameNode: NApiValue? = rootFrameNode
+    private var currentUiContext: napi_value? = uiContext
 
     fun getOhosView(): OhosViewWrapper {
         return object : OhosViewWrapper {
@@ -317,12 +320,13 @@ class RenderingUIView(
     }
 
     override fun updateFrameNodeId(frameNodeId: Int) {
-        mediator.updateRootFrameNode(currentRootFrameNode, frameNodeId)
+        mediator.updateRootFrameNode(currentRootFrameNode, frameNodeId, currentUiContext)
     }
 
-    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?) {
+    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?, uiContext: napi_value?) {
         currentRootFrameNode = rootFrameNode
-        mediator.updateRootFrameNode(rootFrameNode, frameNodeId)
+        currentUiContext = uiContext
+        mediator.updateRootFrameNode(rootFrameNode, frameNodeId, uiContext)
     }
 
 

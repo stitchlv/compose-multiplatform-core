@@ -100,6 +100,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import platform.ohos.napi.napi_value
 
 internal class ComposeSceneMediator(
     private val id: Long,
@@ -116,7 +117,8 @@ internal class ComposeSceneMediator(
     private val isPreCompose: Boolean,
     private val extraValuesGetter: () -> Array<ProvidedValue<*>>,
     private val frameNodeId: Int? = null,
-    rootFrameNode: NApiValue? = null
+    rootFrameNode: NApiValue? = null,
+    uiContext: napi_value? = null
 ) : RenderDelegate, OnLayoutCompletedListener {
     companion object {
         private const val TAG = "ComposeSceneMediator"
@@ -214,7 +216,7 @@ internal class ComposeSceneMediator(
     }
 
     private val dvSyncContext = DvSyncContext().apply {
-        setRootFrameNode(rootFrameNode, frameNodeId?.toUInt())
+        setRootFrameNode(rootFrameNode, frameNodeId?.toUInt(), uiContext)
     }
 
     private val densityFlow = combine(
@@ -420,8 +422,8 @@ internal class ComposeSceneMediator(
         uiViewParam.updateTextToolbar(textToolbar)
     }
 
-    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?) {
-        dvSyncContext.setRootFrameNode(rootFrameNode, frameNodeId?.toUInt())
+    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?, uiContext: napi_value?) {
+        dvSyncContext.setRootFrameNode(rootFrameNode, frameNodeId?.toUInt(), uiContext)
     }
 
     fun handleTouchEvent(event: TouchEvent): Boolean {
