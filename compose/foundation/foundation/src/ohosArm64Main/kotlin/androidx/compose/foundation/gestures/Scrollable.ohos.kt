@@ -41,12 +41,20 @@ internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior {
 }
 
 internal actual fun CompositionLocalConsumerModifierNode.setUiDvsyncSwitchForFling(enable: Boolean) {
+    if (!node.isAttached) {
+        OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=nodeDetached enable=$enable")
+        return
+    }
     val traceName = if (enable) {
         "Scrollable.FlingStart.SetUiDvsyncSwitch"
     } else {
         "Scrollable.FlingEnd.SetUiDvsyncSwitch"
     }
     trace(traceName) {
+        if (!node.isAttached) {
+            OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=nodeDetachedInTrace enable=$enable")
+            return@trace
+        }
         val uiDvsyncSwitch = currentValueOf(LocalUiDvsyncSwitch)
         if (uiDvsyncSwitch == null) {
             OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=noLocalUiDvsyncSwitch enable=$enable")
