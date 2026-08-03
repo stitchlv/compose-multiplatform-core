@@ -33,6 +33,7 @@ import kotlin.concurrent.Volatile
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import platform.ohos.node.ARKUI_HIT_TEST_MODE_DEFAULT
+import platform.ohos.napi.napi_value
 
 private const val TAG = "ComposeEntrance"
 
@@ -74,7 +75,8 @@ object ComposeController {
         textToolbar: NApiValue?, nodeController: NApiValue, frameHolderGetter: FrameHolderGetter? = null,
         constraint: SizeConstraint? = null, hitTestMode: Int = ARKUI_HIT_TEST_MODE_DEFAULT.toInt(),
         isPreCompose: Boolean = false, preComposeProbe: PreComposeProbe? = null,
-        extraValuesGetter: () -> Array<ProvidedValue<*>> = DefaultExtraValuesGetter, frameNodeId: Int?
+        extraValuesGetter: () -> Array<ProvidedValue<*>> = DefaultExtraValuesGetter, frameNodeId: Int?, rootFrameNode: NApiValue?,
+        uiContext: napi_value?
     ): FrameRenderView {
         OHLogger.i(TAG, "initRenderNode: $id ${param.rawValue}")
         val contentData: ContentData = contents[id] ?: run {
@@ -87,8 +89,8 @@ object ComposeController {
             RenderNodeV2(rootContent)
         }
         return RenderingUIView(
-            renderNode, importApi, param, interopBottomNodeContent, interopTopNodeContent, textToolbar, nodeController, contentData, frameHolderGetter, constraint,
-            hitTestMode, isPreCompose, preComposeProbe, extraValuesGetter, frameNodeId
+            renderNode, importApi, param, rootContent, interopBottomNodeContent, interopTopNodeContent, textToolbar, nodeController, contentData, frameHolderGetter, constraint,
+            hitTestMode, isPreCompose, preComposeProbe, extraValuesGetter, frameNodeId, rootFrameNode, uiContext
         ).apply {
             onCreate()
         }

@@ -61,6 +61,7 @@ import kotlinx.cinterop.staticCFunction
 import kotlinx.coroutines.DisposableHandle
 import kotlin.native.ref.WeakReference
 import kotlinx.coroutines.SupervisorJob
+import platform.ohos.napi.napi_value
 
 private const val TAG = "RenderingUIView"
 
@@ -70,6 +71,7 @@ class RenderingUIView(
     renderNode: AbsRenderNode,
     importApi: FrameImportApi,
     param: NApiValue,
+    rootContent: NApiValue?,
     interopBottomNodeContent: NApiValue,
     interopTopNodeContent: NApiValue,
     textToolbar: NApiValue?,
@@ -81,11 +83,15 @@ class RenderingUIView(
     isPreCompose: Boolean,
     private val preComposeProbe: PreComposeProbe?,
     extraValuesGetter: () -> Array<ProvidedValue<*>>,
-    val frameNodeId: Int?
+    val frameNodeId: Int?,
+    rootFrameNode: NApiValue?,
+    uiContext: napi_value?
 ) : FrameRenderView(
     renderNode, constraint, importApi, param,
     contentData.touchInterceptor ?: EmptyTouchEventInterceptor
 ) {
+    private var lastOnFrameTimeNanos: Long = 0L
+
     companion object {
         internal fun getMediator(id: Long): ComposeSceneMediator? {
             return (getRenderView(id) as? RenderingUIView)?.mediator
@@ -147,11 +153,14 @@ class RenderingUIView(
     private var onIdleEventConsumed = false
 
     private val mediator = ComposeSceneMediator(
-        id, coroutineContext, contentData, param, interopBottomNodeContent, interopTopNodeContent, textToolbar, this::invalidate,
-        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter
+        id, coroutineContext, contentData, param, rootContent, interopBottomNodeContent, interopTopNodeContent, textToolbar, this::invalidate,
+        this::resetSize, getOhosView(), isPreCompose, extraValuesGetter, frameNodeId, rootFrameNode, uiContext
     )
 
     private var hasSetTextToolbar: Boolean = setTextToolBarFinalizer(this, textToolbar)
+
+    private var currentRootFrameNode: NApiValue? = rootFrameNode
+    private var currentUiContext: napi_value? = uiContext
 
     fun getOhosView(): OhosViewWrapper {
         return object : OhosViewWrapper {
@@ -200,14 +209,20 @@ class RenderingUIView(
 
     override fun onDraw(canvas: Canvas) {
         if (isReleased) return
+        val drawStartTimeNanos = currentNanoTime()
+        val renderFrameTimeNanos = if (lastOnFrameTimeNanos > 0L) {
+            lastOnFrameTimeNanos
+        } else {
+            drawStartTimeNanos
+        }
         if (withOffscreenRender) {
             canvas.saveLayer(0F, 0F, width.toFloat(), height.toFloat(), null)
         }
         if (needBackgroundColor) {
             canvas.clear((if (HarkoContext.isDarkThemeFlow.value) 0xFF000000 else 0xFFFFFFFF).toInt())
         }
-        frameDelegate.onFrameStart(currentNanoTime(), id.toString())
-        mediator.onRender(canvas, width, height, currentNanoTime())
+        frameDelegate.onFrameStart(drawStartTimeNanos, id.toString())
+        mediator.onRender(canvas, width, height, renderFrameTimeNanos)
         frameDelegate.onFrameEnd(currentNanoTime(), id.toString(), preComposeProbe?.isActualLaunched())
         if (withOffscreenRender) {
             canvas.restore()
@@ -261,6 +276,7 @@ class RenderingUIView(
 
     override fun onFrame(frameTime: Long) {
         if (isReleased) return
+        lastOnFrameTimeNanos = frameTime
         onIdleEventConsumed = false
         super.onFrame(frameTime)
     }
@@ -304,7 +320,13 @@ class RenderingUIView(
     }
 
     override fun updateFrameNodeId(frameNodeId: Int) {
+        mediator.updateRootFrameNode(currentRootFrameNode, frameNodeId, currentUiContext)
+    }
 
+    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?, uiContext: napi_value?) {
+        currentRootFrameNode = rootFrameNode
+        currentUiContext = uiContext
+        mediator.updateRootFrameNode(rootFrameNode, frameNodeId, uiContext)
     }
 
 

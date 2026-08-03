@@ -52,7 +52,9 @@ import androidx.compose.ui.platform.EmptyViewConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInternalViewModelStoreOwner
 import androidx.compose.ui.platform.LocalKeyboardOverlapHeight
+import androidx.compose.ui.platform.LocalUiDvsyncSwitch
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.DvSyncContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.OhosLocalTextToolbar
 import androidx.compose.ui.platform.OhosTextInputService
@@ -98,12 +100,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import platform.ohos.napi.napi_value
 
 internal class ComposeSceneMediator(
     private val id: Long,
     coroutineContext: CoroutineContext,
     private val contentData: ContentData,
     param: NApiValue,
+    rootContent: NApiValue?,
     interopBottomNodeContent: NApiValue,
     interopTopNodeContent: NApiValue,
     textToolbar: NApiValue?,
@@ -111,7 +115,10 @@ internal class ComposeSceneMediator(
     private val onSizeChanged: (Int, Int) -> Unit,
     private val ohosViewWrapper: OhosViewWrapper,
     private val isPreCompose: Boolean,
-    private val extraValuesGetter: () -> Array<ProvidedValue<*>>
+    private val extraValuesGetter: () -> Array<ProvidedValue<*>>,
+    private val frameNodeId: Int? = null,
+    rootFrameNode: NApiValue? = null,
+    uiContext: napi_value? = null
 ) : RenderDelegate, OnLayoutCompletedListener {
     companion object {
         private const val TAG = "ComposeSceneMediator"
@@ -206,6 +213,10 @@ internal class ComposeSceneMediator(
                 lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED
             }
         )
+    }
+
+    private val dvSyncContext = DvSyncContext().apply {
+        setRootFrameNode(rootFrameNode, frameNodeId?.toUInt(), uiContext)
     }
 
     private val densityFlow = combine(
@@ -411,6 +422,10 @@ internal class ComposeSceneMediator(
         uiViewParam.updateTextToolbar(textToolbar)
     }
 
+    fun updateRootFrameNode(rootFrameNode: NApiValue?, frameNodeId: Int?, uiContext: napi_value?) {
+        dvSyncContext.setRootFrameNode(rootFrameNode, frameNodeId?.toUInt(), uiContext)
+    }
+
     fun handleTouchEvent(event: TouchEvent): Boolean {
         if (event.type == TouchType.Cancel) {
             if (HarkoContext.isDebug) {
@@ -491,6 +506,7 @@ internal class ComposeSceneMediator(
 
         GlobalFocusCoordinator.unregisterView(id)
         ohosTextInputService.dispose()
+        dvSyncContext.onSurfaceDestroyed()
         densityFlowJob.cancel()
         displaySizeFlowJob.cancel()
         uiViewParam.dispose()
@@ -606,6 +622,7 @@ internal class ComposeSceneMediator(
             OhosWindowInsetsLocal provides windowInsetsState,
             LocalArkUIInteropContainer provides interopViewContainer,
             LocalArkUIInteropContext provides interopContext,
+            LocalUiDvsyncSwitch provides { enable -> dvSyncContext.setUiDvsyncSwitchForFling(enable) },
             SystemFontWeightScale provides fontWeightScale,
             SystemFontId provides systemFontId,
             LocalView provides ohosViewWrapper,

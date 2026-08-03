@@ -21,6 +21,7 @@ import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 
 internal actual fun platformDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
     DefaultFlingBehavior(
@@ -34,3 +35,5 @@ internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior {
         DefaultFlingBehavior(flingSpec)
     }
 }
+
+internal actual fun CompositionLocalConsumerModifierNode.setUiDvsyncSwitchForFling(enable: Boolean) = Unit

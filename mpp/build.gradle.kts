@@ -11,6 +11,7 @@ buildscript {
     apply(from = "${rootDir}/build_properties.gradle")
     val map = extensions.getByName("build_properties") as Map<String, Any?>
     repositories {
+        mavenLocal()
         map.get("custom_maven_url")?.let {
             maven(url = uri(it))
         }

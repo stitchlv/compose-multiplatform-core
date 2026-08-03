@@ -32,6 +32,62 @@ if(AndroidXComposePlugin.isMultiplatformEnabled(project)) {
                 api(libs.harko)
             }
         }
+
+        ohosArm64 {
+            def main = compilations.getByName("main")
+
+            main.cinterops.create("arkui_utils") {
+                defFile(project.file("src/nativeInterop/cinterop/arkui_utils.def"))
+                includeDirs(project.file("src/ohosArm64Main/cpp"))
+            }
+
+            def cppSourceDir = project.file("src/ohosArm64Main/cpp")
+            def cppBuildDir = new File(project.buildDir, "cpp/ohosArm64/arkui_utils")
+            def binaryFile = new File(cppBuildDir, "libarkui_utils.a")
+
+            def sdkHome = System.getProperty("DEVECO_STUDIO_HOME") ?: System.getenv("DEVECO_STUDIO_HOME") ?: "/Applications/DevEco-Studio.app"
+            def harmonyNativeDir = new File(sdkHome, "Contents/sdk/default/openharmony/native")
+            def cmakePath = new File(harmonyNativeDir, "build-tools/cmake/bin/cmake")
+            def ninjaPath = new File(harmonyNativeDir, "build-tools/cmake/bin/ninja")
+            def cmakeToolChainPath = new File(harmonyNativeDir, "build/cmake/ohos.toolchain.cmake")
+
+            tasks.register("ohosArm64ConfigArkuiUtils", Exec) {
+                group = "build"
+                description = "CMake Config for arkui_utils"
+                doFirst { cppBuildDir.mkdirs() }
+                commandLine(
+                    cmakePath.absolutePath,
+                    "-S", cppSourceDir.absolutePath,
+                    "-B", cppBuildDir.absolutePath,
+                    "-GNinja",
+                    "-DCMAKE_MAKE_PROGRAM=${ninjaPath.absolutePath}",
+                    "-DCMAKE_TOOLCHAIN_FILE=${cmakeToolChainPath.absolutePath}",
+                    "-DOHOS_ARCH=arm64-v8a",
+                    "-DOHOS_PLATFORM=OHOS"
+                )
+            }
+
+            tasks.register("ohosArm64BuildArkuiUtils", Exec) {
+                group = "build"
+                description = "CMake Build for arkui_utils"
+                dependsOn("ohosArm64ConfigArkuiUtils")
+                commandLine(cmakePath.absolutePath, "--build", cppBuildDir.absolutePath)
+            }
+
+            main.compileTaskProvider.configure {
+                dependsOn("ohosArm64BuildArkuiUtils")
+                inputs.file(binaryFile).withPropertyName("arkui_utils-ohosArm64-static-lib")
+            }
+
+            binaries.all {
+                freeCompilerArgs += ["-include-binary", binaryFile.absolutePath]
+            }
+            compilations.all {
+                kotlinOptions {
+                    freeCompilerArgs += ["-include-binary", binaryFile.absolutePath]
+                }
+            }
+        }
     }
 }
 

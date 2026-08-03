@@ -21,6 +21,13 @@ import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.foundation.gestures.cupertino.CupertinoFlingBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.currentValueOf
+import androidx.compose.ui.platform.LocalUiDvsyncSwitch
+import androidx.compose.ui.util.trace
+import com.bytedance.kmp.harko.OHLogger
+
+private const val DV_SYNC_TAG = "DvSyncContext1"
 
 internal actual fun platformDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
     CupertinoFlingBehavior(CupertinoScrollDecayAnimationSpec().generateDecayAnimationSpec())
@@ -30,5 +37,30 @@ internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior {
     // 鸿蒙的滑动动画更接近 ios 的滑动动画
     return remember {
         platformDefaultFlingBehavior()
+    }
+}
+
+internal actual fun CompositionLocalConsumerModifierNode.setUiDvsyncSwitchForFling(enable: Boolean) {
+    if (!node.isAttached) {
+        OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=nodeDetached enable=$enable")
+        return
+    }
+    val traceName = if (enable) {
+        "Scrollable.FlingStart.SetUiDvsyncSwitch"
+    } else {
+        "Scrollable.FlingEnd.SetUiDvsyncSwitch"
+    }
+    trace(traceName) {
+        if (!node.isAttached) {
+            OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=nodeDetachedInTrace enable=$enable")
+            return@trace
+        }
+        val uiDvsyncSwitch = currentValueOf(LocalUiDvsyncSwitch)
+        if (uiDvsyncSwitch == null) {
+            OHLogger.w(DV_SYNC_TAG, "FlingSwitch skipped reason=noLocalUiDvsyncSwitch enable=$enable")
+            return@trace
+        }
+        OHLogger.i(DV_SYNC_TAG, "FlingSwitch request enable=$enable")
+        uiDvsyncSwitch.invoke(enable)
     }
 }

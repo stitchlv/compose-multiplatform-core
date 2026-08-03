@@ -153,7 +153,7 @@ internal abstract class BaseComposeScene(
     }
 
     override fun render(canvas: Canvas, nanoTime: Long) =
-        postponeInvalidation("BaseComposeScene:render") {
+        postponeInvalidation("BaseComposeScene:render_ohos") {
             // We try to run the phases here in the same order Android does.
 
             // Flush composition effects (e.g. LaunchedEffect, coroutines launched in
